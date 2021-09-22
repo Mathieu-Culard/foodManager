@@ -13,30 +13,37 @@ class UserController
     $username = htmlspecialchars($data->username) ?? '';
     $password = $data->password ?? '';
     $passwordConf = $data->passwordConf ?? '';
-    $email = $data->email ?? '';
-
+    $email = filter_var($data->email, FILTER_SANITIZE_EMAIL) ?? '';
 
     $user = new User();
-
+    // $error="";
     $user->setUsername($username);
-    $user->setEmail(filter_var($email, FILTER_SANITIZE_EMAIL));
+    if ($data->email == $email && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+      $user->setEmail($email);
+    } else {
+      $error = "Email incorrect";
+    }
     if ($password === $passwordConf && $password != '') {
       $user->setPassword(password_hash($password, PASSWORD_DEFAULT)); //password_verify
     } else {
-      echo 'erreur';
+      $error = "les mots de passe ne correspondent pas";
     }
-    $user->setAvatar('blabla');
+    $user->setAvatar('avatar.png');
     $user->setRole('ROLE_USER');
 
-    $response = $user->insert();
-    // echo 'yes'.$test;
-    if ($response instanceof User) {
-      http_response_code(201);
-      echo json_encode($response);
+    if (!isset($error)) {
+      $response = $user->insert();
+      if ($response instanceof User) {
+        http_response_code(201);
+        echo json_encode($response);
+      } else {
+        // $error=
+        http_response_code(400);
+        echo json_encode(User::createCustomError($response));
+      }
     } else {
-      // $error=
       http_response_code(400);
-      echo json_encode(User::createCustomError($response));
+      echo json_encode($error);
     }
   }
 

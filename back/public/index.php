@@ -29,7 +29,7 @@ require_once '../vendor/autoload.php';
 
 use App\Controllers\MainController;
 use App\Controllers\UserController;
-
+use App\Controllers\RecipesController;
 /* ------------
 --- ROUTAGE ---
 -------------*/
@@ -81,10 +81,20 @@ $router->map(
 
 $router->map(
     'GET',
+    '/recipes',
+    [
+        'method' => 'list',
+        'controller' => RecipesController::class,
+    ],
+    'recipes'
+);
+
+$router->map(
+    'GET',
     '/checktoken',
     [
-        'method'=>'checkToken',
-        'controller'=>UserController::class,
+        'method' => 'checkToken',
+        'controller' => UserController::class,
     ],
     'checkToken'
 );
