@@ -86,8 +86,18 @@ $router->map(
         'method' => 'list',
         'controller' => RecipesController::class,
     ],
-    'recipes'
+    'recipes-list'
 );
+
+$router->map(
+    'GET',
+    '/recipe/[i:id]',
+    [
+        'method'=>'getRecipe',
+        'controller'=> RecipesController::class,
+    ],
+    'get-recipe',
+    );
 
 $router->map(
     'GET',
@@ -107,8 +117,9 @@ $match = $router->match();
 if ($match) {
     $controllerToUse = $match['target']['controller'];
     $methodToUse =  $match['target']['method'];
+    $urlParams = $match['params'];
     $controller = new $controllerToUse();
-    $controller->$methodToUse();
+    $controller->$methodToUse($urlParams);
 } else {
     http_response_code(404);
     echo 'mange ta maman';

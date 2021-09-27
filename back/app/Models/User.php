@@ -3,10 +3,10 @@
 namespace App\Models;
 
 use App\Utils\Database;
-use JsonSerializable;
 use PDO;
 use \Firebase\JWT\JWT;
 use PDOException;
+use JsonSerializable;
 
 class User extends CoreModel implements JsonSerializable
 {
@@ -34,7 +34,20 @@ class User extends CoreModel implements JsonSerializable
     private $role;
 
 
+    public static function findRecipeOwner($recipeId){
+        $pdo = Database::getPDO();
+        $sql = "SELECT *
+                FROM users u
+                INNER JOIN recipes r
+                ON r.user_id=u.id
+                WHERE r.id= :recipeId";
 
+        $preparedQuery = $pdo->prepare($sql);
+        $preparedQuery->bindValue(':recipeId', $recipeId);
+        $preparedQuery->execute();
+        $steps = $preparedQuery->fetchObject(static::class);
+        return $steps;
+    }
     public static function find($username)
     {
         $pdo = Database::getPDO();
@@ -245,11 +258,10 @@ class User extends CoreModel implements JsonSerializable
     {
         $this->role = $role;
     }
-
     public function jsonSerialize()
     {
-        $vars = get_object_vars($this);
-
-        return $vars;
+      $vars = get_object_vars($this);
+  
+      return $vars;
     }
 }

@@ -6,7 +6,7 @@ use App\Utils\Database;
 use JsonSerializable;
 use PDO;
 
-class Recipe extends CoreModel implements JsonSerializable
+class Recipe extends CoreModel  implements JsonSerializable
 {
   /**
    * @var string
@@ -42,6 +42,29 @@ class Recipe extends CoreModel implements JsonSerializable
     $statement = $pdo->query($sql);
     $recipes = $statement->fetchAll(PDO::FETCH_CLASS, static::class);
     return $recipes;
+  }
+
+  public static function find($id)
+  {
+    $pdo = Database::getPDO();
+    $sql = "SELECT * FROM recipes WHERE id= :id";
+    $preparedQuery = $pdo->prepare($sql);
+    $preparedQuery->bindValue(':id',$id);
+    $preparedQuery->execute();
+    $recipe = $preparedQuery->fetchObject(static::class);
+
+    
+    return $recipe;
+  }
+
+  public static function findRecipeSteps($id){
+    $pdo = Database::getPDO();
+    $sql = "SELECT * FROM steps WHERE recipe_id= :id";
+    $preparedQuery = $pdo->prepare($sql);
+    $preparedQuery->bindValue(':id',$id);
+    $preparedQuery->execute();
+    $steps = $preparedQuery->fetchAll();
+    return $steps;
   }
 
   /**
