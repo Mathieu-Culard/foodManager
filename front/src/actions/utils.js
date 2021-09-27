@@ -2,6 +2,16 @@ export const OPEN_MODAL = 'OPEN_MODAL';
 export const CLOSE_MODAL = 'CLOSE_MODAL';
 export const OPEN_SNACKBAR = 'OPEN_SNACKBAR';
 export const CLOSE_SNACKBAR = 'CLOSE_SNACKBAR';
+export const LOAD = 'LOAD';
+export const END_LOAD = 'END_LOAD';
+
+export const endLoad = () => ({
+  type: END_LOAD,
+});
+
+export const load = () => ({
+  type: LOAD,
+});
 
 export const openSnackbar = (message, severity) => ({
   type: OPEN_SNACKBAR,

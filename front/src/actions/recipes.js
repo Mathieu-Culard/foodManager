@@ -1,10 +1,16 @@
-export const FETCH_RECIPES = 'FETCH_RECIPES';
+export const FETCH_PUBLIC_RECIPES = 'FETCH_PUBLIC_RECIPES';
 export const SAVE_RECIPES = 'SAVE_RECIPES';
-export const LOAD = 'LOAD';
-export const END_LOAD = 'END_LOAD';
+export const FETCH_RECIPE = 'FETCH_RECIPE';
+export const SAVE_CURRENT_RECIPE = 'SAVE_CURRENT_RECIPE';
 
-export const endLoad = () => ({
-  type: END_LOAD,
+export const saveCurrentRecipe = (recipe) => ({
+  type: SAVE_CURRENT_RECIPE,
+  recipe,
+});
+
+export const fetchRecipe = (id) => ({
+  type: FETCH_RECIPE,
+  id,
 });
 
 export const saveRecipes = (recipes) => ({
@@ -12,6 +18,6 @@ export const saveRecipes = (recipes) => ({
   recipes,
 });
 
-export const fetchRecipes = () => ({
-  type: FETCH_RECIPES,
+export const fetchPublicRecipes = () => ({
+  type: FETCH_PUBLIC_RECIPES,
 });

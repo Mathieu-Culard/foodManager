@@ -1,2 +1,18 @@
-
+.header{
+  display: flex;
+  height: 5vh;
+  align-items: center;
+  width: 90%;
+  margin: auto;
+  justify-content: space-between;
+  &__title{
+    font-size: 25px;
+    font-weight: bold;
+  }
+  &__links{
+    display: flex;
+    width: 30%;
+    justify-content: space-between;
+  }
+}
 

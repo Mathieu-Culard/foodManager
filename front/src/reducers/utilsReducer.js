@@ -3,9 +3,12 @@ import {
   CLOSE_MODAL,
   OPEN_SNACKBAR,
   CLOSE_SNACKBAR,
+  LOAD,
+  END_LOAD,
 } from 'src/actions/utils';
 
 const initialState = {
+  loading: true,
   modalComponent: '',
   modalTitle: '',
   modal: false,
@@ -39,6 +42,16 @@ const utilsReducer = (state = initialState, action = {}) => {
       return {
         ...state,
         modal: false,
+      };
+    case LOAD:
+      return {
+        ...state,
+        loading: true,
+      };
+    case END_LOAD:
+      return {
+        ...state,
+        loading: false,
       };
     default: return state;
   }

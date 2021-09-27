@@ -21,7 +21,7 @@ const RegisterForm = ({
       />
       <input
         type="email"
-        id="username"
+        id="email"
         value={email}
         name="email"
         placeholder="adresse email"

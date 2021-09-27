@@ -5,15 +5,16 @@ import './header.scss';
 
 const Header = ({ openModal, isLogged, logOut }) => (
   <header className="header">
+    <h1 className="header__title">FOOD MANAGER</h1>
     {!isLogged && (
-      <>
+      <div className="header__links">
         <a className="header_link" href="#" onClick={() => openModal('Inscription', 'RegisterForm')}>
           Inscription
         </a>
         <a className="header_link" href="#" onClick={() => openModal('Connection', 'ConnectionForm')}>
           Connexion
         </a>
-      </>
+      </div>
     )}
     {isLogged && (
       <a className="header_link" href="#" onClick={() => logOut()}>

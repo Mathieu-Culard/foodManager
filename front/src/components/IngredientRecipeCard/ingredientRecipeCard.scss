@@ -1,0 +1,28 @@
+.ingredient-card {
+  margin: 0 2rem 0 2rem;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding:1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0px -3px 9px 1px rgba(16, 16, 16, 0.23);
+
+  &__image{
+    width: 150px;
+    box-shadow: 0px -3px 9px 1px rgba(16, 16, 16, 0.23);
+    height: 100px;
+    object-fit: cover;
+    border-radius:20px;
+  }
+  &__infos{
+    
+    display: flex;
+    padding-top: 0.5rem;
+    justify-content: space-between;
+    font-size: 18px;
+    &__name{
+    }
+    &__quantity{
+
+    }
+  }
+}

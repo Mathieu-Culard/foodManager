@@ -1,15 +1,17 @@
 import { connect } from 'react-redux';
-import Recipes from 'src/pages/Recipes';
+import Footer from 'src/components/Footer';
+
+import { openModal } from 'src/actions/utils';
 
 const mapStateToProps = (state) => ({
-  recipes: state.recipe.recipesList,
-  isLoading: state.recipe.isLoading,
+
 });
 
 const mapDispatchToProps = (dispatch) => ({
+  openModal: (title, component) => dispatch(openModal(title, component)),
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(Recipes);
+)(Footer);
