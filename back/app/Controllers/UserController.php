@@ -63,7 +63,7 @@ class UserController
       }
     } else {
       http_response_code(401);
-      echo 'wrong username';
+      echo json_encode('wrong username');
     }
   }
 

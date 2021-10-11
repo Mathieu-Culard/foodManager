@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Utils\Database;
+use App\Models\Ingredient;
 use PDO;
 use \Firebase\JWT\JWT;
 use PDOException;
@@ -114,6 +115,7 @@ class User extends CoreModel implements JsonSerializable
                 'username' => $this->getUsername(),
                 'role' => $this->getRole(),
                 'avatar' => $this->getAvatar(),
+                'stock' =>Ingredient::findUserIngredients($this->getId()),
             ]
         ]);
     }
@@ -125,7 +127,7 @@ class User extends CoreModel implements JsonSerializable
         $audience_claim = "THE_AUDIENCE";
         $issuedat_claim = time(); // issued at
         $notbefore_claim = $issuedat_claim; //not before in seconds
-        $expire_claim = $issuedat_claim + 60; // expire time in seconds
+        $expire_claim = $issuedat_claim + 3600; // expire time in seconds
         $token = [
             "iss" => $issuer_claim,
             "aud" => $audience_claim,
@@ -153,6 +155,7 @@ class User extends CoreModel implements JsonSerializable
                 $decoded = JWT::decode($jwt, $secret_key, array('HS256'));
                 return [
                     "message" => "success",
+                    "userId"=>$decoded->data->id,
                 ];
             } catch (\Exception $e) {
                 return [

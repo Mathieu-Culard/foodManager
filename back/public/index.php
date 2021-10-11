@@ -1,6 +1,6 @@
 <?php
 
-ini_set('display_errors', true);
+ini_set('display_errors', 0);
 
 // header("Access-Control-Allow-Origin: *");
 // header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
@@ -30,6 +30,7 @@ require_once '../vendor/autoload.php';
 use App\Controllers\MainController;
 use App\Controllers\UserController;
 use App\Controllers\RecipesController;
+use App\Controllers\IngredientsController;
 /* ------------
 --- ROUTAGE ---
 -------------*/
@@ -88,16 +89,64 @@ $router->map(
     ],
     'recipes-list'
 );
+$router->map(
+    'GET',
+    '/ingredients',
+    [
+        'method' => 'list',
+        'controller' => IngredientsController::class,
+    ],
+    'ingredients-list'
+);
 
 $router->map(
     'GET',
     '/recipe/[i:id]',
     [
-        'method'=>'getRecipe',
-        'controller'=> RecipesController::class,
+        'method' => 'getRecipe',
+        'controller' => RecipesController::class,
     ],
     'get-recipe',
-    );
+);
+$router->map(
+    'GET',
+    '/stock/list',
+    [
+        'method'=>'listUserIngredients',
+        'controller'=>IngredientsController::class,
+    ],
+    'stock-list'
+);
+
+$router->map(
+    'POST',
+    '/stock/add',
+    [
+        'method' => 'createStockIngredient',
+        'controller' => IngredientsController::class,
+    ],
+    'stock-add',
+);
+
+$router->map(
+    'POST',
+    '/stock/edit/[i:id]',
+    [
+        'method' => 'updateStock',
+        'controller' => IngredientsController::class,
+    ],
+    'stock-update'
+);
+
+$router->map(
+    'DELETE',
+    '/stock/delete/[i:id]',
+    [
+        'method' => 'deleteFromStock',
+        'controller' => IngredientsController::class,
+    ],
+    'delete-from-stock'
+);
 
 $router->map(
     'GET',
@@ -108,6 +157,7 @@ $router->map(
     ],
     'checkToken'
 );
+
 /* -------------
 --- DISPATCH ---
 --------------*/
@@ -122,7 +172,6 @@ if ($match) {
     $controller->$methodToUse($urlParams);
 } else {
     http_response_code(404);
-    echo 'mange ta maman';
     exit;
 }
 

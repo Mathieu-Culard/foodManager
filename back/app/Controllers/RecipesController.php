@@ -17,7 +17,7 @@ class RecipesController
 
   public function getRecipe($urlParam)
   {
-    $recipe[]=array();
+    $recipe=[];
     $id=$urlParam['id'];
     $recipe['infos'] = Recipe::find($id);
     $recipe['ingredients']= Ingredient::findRecipeIngredients($id);
