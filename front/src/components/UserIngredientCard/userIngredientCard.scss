@@ -1,0 +1,24 @@
+.user-ingredient-card {
+  padding: 1rem;
+  margin-top: 1rem; 
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  border:1px solid #ccc;
+  border-radius: 20px;
+  box-shadow: 0px -3px 9px 1px rgba(16, 16, 16, 0.23);
+  &__image {
+    object-fit: cover;
+    max-width: 20%;
+    max-height: 40vh;
+  }
+  &__input{
+    width: 20%;
+    padding: 0px;
+  }
+  &__buttons{
+    display: flex;
+    flex-direction: column;
+  }
+}

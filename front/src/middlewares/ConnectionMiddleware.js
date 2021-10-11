@@ -3,6 +3,7 @@ import axios from 'axios';
 import {
   SUBMIT_REGISTRATION, clearForm, SUBMIT_CONNECTION, CHECK_TOKEN, logIn, LOG_OUT, logOut,
 } from 'src/actions/connection';
+import { clearAddStock } from 'src/actions/ingredients';
 import { saveUserInfo, clearUserInfo } from 'src/actions/user';
 import { CLOSE_MODAL, closeModal, openSnackbar } from 'src/actions/utils';
 
@@ -10,6 +11,7 @@ const ConnectionMiddleware = (store) => (next) => (action) => {
   switch (action.type) {
     case CLOSE_MODAL: {
       store.dispatch(clearForm());
+      store.dispatch(clearAddStock());
       next(action);
       break;
     }
@@ -45,7 +47,7 @@ const ConnectionMiddleware = (store) => (next) => (action) => {
         username,
         password,
       }).then((response) => {
-        console.log(response.data);
+        // console.log(response.data.user.stock[1]);
         localStorage.setItem('jwt', response.data.token);
         store.dispatch(closeModal());
         store.dispatch(logIn());
@@ -77,6 +79,7 @@ const ConnectionMiddleware = (store) => (next) => (action) => {
       break;
     }
     case LOG_OUT: {
+      localStorage.clear();
       store.dispatch(clearUserInfo());
       store.dispatch(openSnackbar('deconnexion effectué', 'success'));
       next(action);

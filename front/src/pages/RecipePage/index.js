@@ -26,7 +26,7 @@ const RecipePage = ({ fetchRecipe, recipe, isLoading }) => {
               <div className="recipe-page__head__ingredients__container">
                 {
                   recipe.ingredients.map((ingredient) => (
-                    <IngredientCard key={ingredient.id} {...ingredient} />
+                    <IngredientCard key={`ingredient ${ingredient.id}`} {...ingredient} />
                   ))
                 }
               </div>
@@ -37,10 +37,10 @@ const RecipePage = ({ fetchRecipe, recipe, isLoading }) => {
               <h2 className="recipe-page__body__steps__title">Préparation</h2>
               {
                 recipe.steps.map((step, i) => (
-                  <>
-                    <h3 className="recipe-page__body__steps__counters" key={step.id}>{`Etape ${i + 1}`}</h3>
+                  <div key={`step ${step.id}`}>
+                    <h3 className="recipe-page__body__steps__counters" >{`Etape ${i + 1}`}</h3>
                     <p className="recipe-page__body__steps__text">{step.text}</p>
-                  </>
+                  </div>
                 ))
               }
             </div>

@@ -9,15 +9,18 @@ import Snackbar from 'src/containers/Snackbar';
 import HomePage from 'src/containers/HomePage';
 import RecipePage from 'src/containers/RecipePage';
 import Footer from 'src/containers/Footer';
+import StockPanel from 'src/containers/StockPanel';
 // == Composant
-const App = ({ fetchPublicRecipes }) => {
+const App = ({ fetchIngredients, fetchPublicRecipes, isLogged }) => {
   useEffect(() => {
     fetchPublicRecipes();
+    fetchIngredients();
   }, []);
 
   return (
     <div className="app">
       <Header />
+      {isLogged && <StockPanel />}
       <Switch>
         <Route path="/recipe/:id">
           <RecipePage />

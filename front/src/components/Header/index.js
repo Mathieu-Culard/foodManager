@@ -11,7 +11,7 @@ const Header = ({ openModal, isLogged, logOut }) => (
         <a className="header_link" href="#" onClick={() => openModal('Inscription', 'RegisterForm')}>
           Inscription
         </a>
-        <a className="header_link" href="#" onClick={() => openModal('Connection', 'ConnectionForm')}>
+        <a className="header_link" href="#" onClick={() => openModal('Connexion', 'ConnectionForm')}>
           Connexion
         </a>
       </div>

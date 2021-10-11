@@ -3,6 +3,7 @@ import {
   CLOSE_MODAL,
   OPEN_SNACKBAR,
   CLOSE_SNACKBAR,
+  OPEN_PANEL,
   LOAD,
   END_LOAD,
 } from 'src/actions/utils';
@@ -15,6 +16,8 @@ const initialState = {
   snackbar: false,
   snackbarMessage: '',
   snackbarSeverity: '',
+  stockPanel: false,
+  shoppingListPanel: false,
 };
 
 const utilsReducer = (state = initialState, action = {}) => {
@@ -42,6 +45,11 @@ const utilsReducer = (state = initialState, action = {}) => {
       return {
         ...state,
         modal: false,
+      };
+    case OPEN_PANEL:
+      return {
+        ...state,
+        [action.identifier]: !state[action.identifier],
       };
     case LOAD:
       return {

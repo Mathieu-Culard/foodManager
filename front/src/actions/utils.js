@@ -4,6 +4,7 @@ export const OPEN_SNACKBAR = 'OPEN_SNACKBAR';
 export const CLOSE_SNACKBAR = 'CLOSE_SNACKBAR';
 export const LOAD = 'LOAD';
 export const END_LOAD = 'END_LOAD';
+export const OPEN_PANEL = 'OPEN_PANEL';
 
 export const endLoad = () => ({
   type: END_LOAD,
@@ -31,4 +32,9 @@ export const openModal = (title, component) => ({
 
 export const closeModal = () => ({
   type: CLOSE_MODAL,
+});
+
+export const openPanel = (identifier) => ({
+  type: OPEN_PANEL,
+  identifier,
 });

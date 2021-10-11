@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 
 import RegisterForm from 'src/containers/RegisterForm';
 import ConnectionForm from 'src/containers/ConnectionForm';
+import AddIngredientPanel from 'src/containers/AddIngredientPanel';
 import './ModalPanel.scss';
 
 const ModalPanel = ({
@@ -29,6 +30,7 @@ const ModalPanel = ({
                   {
                     RegisterForm: <RegisterForm />,
                     ConnectionForm: <ConnectionForm />,
+                    AddIngredientPanel: <AddIngredientPanel />,
                   }[componentName]
                 }
             </div>
