@@ -56,6 +56,15 @@ class Recipe extends CoreModel  implements JsonSerializable
     
     return $recipe;
   }
+  public static function findUserRecipes($id){
+    $pdo = Database::getPDO();
+    $sql = "SELECT * FROM recipes WHERE user_id= :user_id";
+    $preparedQuery = $pdo->prepare($sql);
+    $preparedQuery->bindValue(':user_id',$id);
+    $preparedQuery->execute();
+    $recipes = $preparedQuery->fetchAll(PDO::FETCH_CLASS, static::class);
+    return $recipes;
+  }
 
   public static function findRecipeSteps($id){
     $pdo = Database::getPDO();

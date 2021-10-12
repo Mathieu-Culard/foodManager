@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Utils\Database;
 use App\Models\Ingredient;
+use App\Models\Recipe;
 use PDO;
 use \Firebase\JWT\JWT;
 use PDOException;
@@ -35,7 +36,8 @@ class User extends CoreModel implements JsonSerializable
     private $role;
 
 
-    public static function findRecipeOwner($recipeId){
+    public static function findRecipeOwner($recipeId)
+    {
         $pdo = Database::getPDO();
         $sql = "SELECT *
                 FROM users u
@@ -115,7 +117,8 @@ class User extends CoreModel implements JsonSerializable
                 'username' => $this->getUsername(),
                 'role' => $this->getRole(),
                 'avatar' => $this->getAvatar(),
-                'stock' =>Ingredient::findUserIngredients($this->getId()),
+                'stock' => Ingredient::findUserIngredients($this->getId()),
+                'recipes' => Recipe::findUserRecipes($this->getId()),
             ]
         ]);
     }
@@ -155,7 +158,7 @@ class User extends CoreModel implements JsonSerializable
                 $decoded = JWT::decode($jwt, $secret_key, array('HS256'));
                 return [
                     "message" => "success",
-                    "userId"=>$decoded->data->id,
+                    "userId" => $decoded->data->id,
                 ];
             } catch (\Exception $e) {
                 return [
@@ -175,14 +178,15 @@ class User extends CoreModel implements JsonSerializable
         return $results;
     }
 
-    public static function createCustomError($error){
-        if($error[0]=="23000"){
-            $arr=explode(" ",$error[2]);
-            $duplicate=$arr[count($arr)-1];
+    public static function createCustomError($error)
+    {
+        if ($error[0] == "23000") {
+            $arr = explode(" ", $error[2]);
+            $duplicate = $arr[count($arr) - 1];
             // return $duplicate;
-            if($duplicate==="'username'"){
+            if ($duplicate === "'username'") {
                 return "Ce nom d'utilisateur est deja utilisé";
-            }else{
+            } else {
                 return "L'adresse Email est deja utilisée";
             }
         }
@@ -263,8 +267,8 @@ class User extends CoreModel implements JsonSerializable
     }
     public function jsonSerialize()
     {
-      $vars = get_object_vars($this);
-  
-      return $vars;
+        $vars = get_object_vars($this);
+
+        return $vars;
     }
 }
