@@ -1,11 +1,11 @@
 import axios from 'axios';
-
 import {
   SUBMIT_REGISTRATION, clearForm, SUBMIT_CONNECTION, CHECK_TOKEN, logIn, LOG_OUT, logOut,
 } from 'src/actions/connection';
 import { clearAddStock } from 'src/actions/ingredients';
 import { saveUserInfo, clearUserInfo } from 'src/actions/user';
 import { CLOSE_MODAL, closeModal, openSnackbar } from 'src/actions/utils';
+import { push } from 'connected-react-router';
 
 const ConnectionMiddleware = (store) => (next) => (action) => {
   switch (action.type) {
@@ -82,6 +82,7 @@ const ConnectionMiddleware = (store) => (next) => (action) => {
       localStorage.clear();
       store.dispatch(clearUserInfo());
       store.dispatch(openSnackbar('deconnexion effectué', 'success'));
+      store.dispatch(push('/'));
       next(action);
       break;
     }

@@ -6,10 +6,11 @@ import { Switch, Route } from 'react-router-dom';
 import Header from 'src/containers/Header';
 import ModalPanel from 'src/containers/ModalPanel';
 import Snackbar from 'src/containers/Snackbar';
-import HomePage from 'src/containers/HomePage';
+import RecipesListPage from 'src/containers/RecipesListPage';
 import RecipePage from 'src/containers/RecipePage';
 import Footer from 'src/containers/Footer';
 import StockPanel from 'src/containers/StockPanel';
+import AddRecipePage from 'src/containers/AddRecipePage';
 // == Composant
 const App = ({ fetchIngredients, fetchPublicRecipes, isLogged }) => {
   useEffect(() => {
@@ -25,8 +26,14 @@ const App = ({ fetchIngredients, fetchPublicRecipes, isLogged }) => {
         <Route path="/recipe/:id">
           <RecipePage />
         </Route>
+        <Route path="/add-recipe">
+          <AddRecipePage />
+        </Route>
+        <Route path="/my-recipes">
+          <RecipesListPage />
+        </Route>
         <Route path="/">
-          <HomePage />
+          <RecipesListPage />
         </Route>
       </Switch>
       {/* <h1>Composant : App</h1>

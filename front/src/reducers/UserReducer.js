@@ -12,6 +12,7 @@ const initialState = {
   role: '',
   stock: [],
   shoppingList: [],
+  recipes: [],
 };
 
 const UserReducer = (state = initialState, action = {}) => {
@@ -38,6 +39,7 @@ const UserReducer = (state = initialState, action = {}) => {
         role: '',
         stock: [],
         shoppingList: [],
+        recipes: [],
       };
     case CHANGE_STOCK_QUANTITY:
       return {
