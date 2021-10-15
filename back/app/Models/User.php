@@ -36,6 +36,9 @@ class User extends CoreModel implements JsonSerializable
     private $role;
 
 
+    /**
+     * retrive the infos of the user that own a particular recipe
+     */
     public static function findRecipeOwner($recipeId)
     {
         $pdo = Database::getPDO();
@@ -51,6 +54,9 @@ class User extends CoreModel implements JsonSerializable
         $steps = $preparedQuery->fetchObject(static::class);
         return $steps;
     }
+    /**
+     * retrive a user by its username
+     */
     public static function find($username)
     {
         $pdo = Database::getPDO();
@@ -66,6 +72,7 @@ class User extends CoreModel implements JsonSerializable
             return false;
         }
     }
+
 
     public function insert()
     {
@@ -105,6 +112,9 @@ class User extends CoreModel implements JsonSerializable
         }
     }
 
+     /**
+     * retrive all the data that app needs when a user connects
+     */
     public function getConnectionInfo()
     {
         $jwt = $this->createToken();
@@ -123,6 +133,9 @@ class User extends CoreModel implements JsonSerializable
         ]);
     }
 
+     /**
+     * create a JWT token that the user will use to access the API
+     */
     public function createToken()
     {
         $secret_key = "TEST";
@@ -148,6 +161,7 @@ class User extends CoreModel implements JsonSerializable
         return $jwt;
     }
 
+    
     public static function checkToken($auth)
     {
         $secret_key = "TEST";

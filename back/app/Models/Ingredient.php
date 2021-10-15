@@ -37,6 +37,10 @@ class Ingredient extends CoreModel  implements JsonSerializable
    */
   private $unity_id;
 
+  /**
+   * return all possible ingredients sorted by category
+   */
+
   public static function findAll()
   {
     $categories = self::getCategories();
@@ -53,6 +57,9 @@ class Ingredient extends CoreModel  implements JsonSerializable
     return $ingredients;
   }
 
+  /**
+   * return users's ingredients sorted by food category
+   */
   public static function findUserIngredients($userId)
   {
     $categories = self::getCategories();
@@ -78,7 +85,9 @@ class Ingredient extends CoreModel  implements JsonSerializable
     }
     return $ingredients;
   }
-
+  /**
+   * return all food category
+   */
   public static function getCategories()
   {
     $pdo = Database::getPDO();
@@ -88,10 +97,14 @@ class Ingredient extends CoreModel  implements JsonSerializable
     return $categories;
   }
 
+  /**
+   * add various ingredients to user's stock
+   */
   public static function addToStock($ingredients, $userId)
   {
     $pdo = Database::getPDO();
     foreach ($ingredients as $ingredient) {
+      // update the desired ingredient if it already exist in the user's stock
       if (self::existInStock($ingredient->id, $userId)) {
         $sql = "SELECT quantity
           FROM users_ingredients
@@ -103,8 +116,8 @@ class Ingredient extends CoreModel  implements JsonSerializable
         $statement->execute();
         $result = $statement->fetch(PDO::FETCH_ASSOC);
         $quantity = $result['quantity'] + $ingredient->quantity;
-        $response=self::updateStockIngredient($ingredient->id, $userId, $quantity);
-        if($response){
+        $response = self::updateStockIngredient($ingredient->id, $userId, $quantity);
+        if ($response) {
           return $response;
         }
         // self::updateStockIngredient($ingredient->id, $userId)
@@ -135,6 +148,56 @@ class Ingredient extends CoreModel  implements JsonSerializable
     }
   }
 
+  /**
+   * add various ingredients to a recipe
+   */
+  public static function addRecipesIngredients($ingredients, $recipeId)
+  {
+    $pdo = Database::getPDO();
+    foreach ($ingredients as $ingredient) {
+      // return $ingredient['quantity'];
+      // die;
+      $sql = "INSERT INTO recipe_ingredients (
+        ingredient_id,
+        recipe_id,
+        quantity
+        ) VALUES (
+          :ingredient_id,
+          :recipe_id,
+          :quantity
+          )
+        ";
+      try {
+        $statement = $pdo->prepare($sql);
+        $statement->bindValue(':ingredient_id', $ingredient['id']);
+        $statement->bindValue(':recipe_id', $recipeId);
+        $statement->bindValue(':quantity', $ingredient['quantity']);
+        $statement->execute();
+      } catch (PDOException $e) {
+        return [
+          'error' => $e->errorInfo,
+          'lel' => 'lel',
+          'model' => 'ingredient'
+        ];
+      }
+    }
+  }
+
+  /**
+   * delete all ingredients linked to the desired recipe
+   */
+  public static function deleteRecipeIngredients($recipeId)
+  {
+    $pdo = Database::getPDO();
+    $sql = "DELETE FROM recipe_ingredients WHERE recipe_id= :recipe_id";
+    $statement = $pdo->prepare($sql);
+    $statement->bindValue(':recipe_id', $recipeId);
+    $statement->execute();
+  }
+
+  /**
+   *check if an ingredients is already present in user's stock
+   */
   public static function existInStock($id, $userId)
   {
     $pdo = Database::getPDO();
@@ -153,6 +216,9 @@ class Ingredient extends CoreModel  implements JsonSerializable
     return false;
   }
 
+  /**
+   * update quantity of an ingredient in user's stock
+   */
   public static function updateStockIngredient($id, $userId, $quantity)
   {
     try {
@@ -173,6 +239,9 @@ class Ingredient extends CoreModel  implements JsonSerializable
     }
   }
 
+  /**
+   * delete ingredient in user's stock
+   */
   public static function deleteStockIngredient($id, $userId)
   {
     try {
@@ -191,6 +260,9 @@ class Ingredient extends CoreModel  implements JsonSerializable
     }
   }
 
+  /**
+   *  retrieve all the ingredients linked to a particular recipe
+   */
   public static function findRecipeIngredients($recipeId)
   {
     $pdo = Database::getPDO();

@@ -7,6 +7,7 @@ use App\Models\User;
 
 class UserController
 {
+
   public function register()
   {
     $data = json_decode(file_get_contents("php://input"));
@@ -47,6 +48,7 @@ class UserController
     }
   }
 
+
   public function login()
   {
     $data = json_decode(file_get_contents("php://input"));
@@ -67,16 +69,16 @@ class UserController
     }
   }
 
-  public function checkToken()
-  {
-    $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
-    $message = $granted["message"];
-    if ($message === "success") {
-      $users = User::findAll();
-      echo json_encode($users);
-    } else {
-      http_response_code(401);
-      echo json_encode($granted);
-    }
-  }
+  // public function checkToken()
+  // {
+  //   $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
+  //   $message = $granted["message"];
+  //   if ($message === "success") {
+  //     $users = User::findAll();
+  //     echo json_encode($users);
+  //   } else {
+  //     http_response_code(401);
+  //     echo json_encode($granted);
+  //   }
+  // }
 }

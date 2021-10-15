@@ -7,11 +7,18 @@ use App\Models\Ingredient;
 
 class IngredientsController
 {
+  /**
+   * Return array of all possible ingredients
+   */
   public function list()
   {
     $ingredients = Ingredient::findAll();
     echo json_encode($ingredients);
   }
+
+  /**
+   * update quantity (newValue) of given ingredient in the user stock
+   */
 
   public function updateStock($urlParam)
   {
@@ -30,6 +37,14 @@ class IngredientsController
     }
   }
 
+  /**
+   * 
+   * delete ingredient in the user stock
+   *
+   *
+   * @param array $urlParam
+   * @return void
+   */
   public function deleteFromStock($urlParam)
   {
     $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
@@ -45,6 +60,9 @@ class IngredientsController
     }
   }
 
+  /**
+   * delete add in the user stock
+   */
   public function createStockIngredient()
   {
     $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
@@ -53,15 +71,24 @@ class IngredientsController
       $ingredients = $data->addStock;
       $response = Ingredient::addToStock($ingredients, $granted['userId']);
       echo json_encode($response);
+    } else {
+      http_response_code(401);
+      echo json_encode('vous devez vous reconnecter');
     }
   }
 
+  /**
+   * Return user stock 
+   */
   public function listUserIngredients()
   {
     $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
     if ($granted['message'] === "success") {
       $ingredients = Ingredient::findUserIngredients($granted['userId']);
       echo json_encode($ingredients);
+    } else {
+      http_response_code(401);
+      echo json_encode('vous devez vous reconnecter');
     }
   }
 }

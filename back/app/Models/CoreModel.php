@@ -33,8 +33,14 @@ class CoreModel
   //     }
   // }
 
-
-
+  
+  public static function createPicture($name){
+    $arr = explode(".", $_FILES['picture']['name']);
+    $ext = end($arr);
+    $picName = $name . "." . $ext;
+    move_uploaded_file($_FILES['picture']['tmp_name'], __DIR__ . "/../../public/assets/recipes/" . $picName);
+    return $picName;
+  }
   /**
    * Get the value of id
    *

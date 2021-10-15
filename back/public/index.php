@@ -59,7 +59,7 @@ else {
 //     ],
 //     'main-home'
 // );
-
+//=============CONNECTION============//
 $router->map(
     'POST',
     '/register',
@@ -80,6 +80,7 @@ $router->map(
     'login'
 );
 
+//=============RECIPES============//
 $router->map(
     'GET',
     '/recipes',
@@ -89,6 +90,67 @@ $router->map(
     ],
     'recipes-list'
 );
+
+$router->map(
+    'GET',
+    '/recipe/[i:id]',
+    [
+        'method' => 'getRecipe',
+        'controller' => RecipesController::class,
+    ],
+    'get-recipe',
+);
+
+$router->map(
+    'GET',
+    '/recipe/my-recipes',
+    [
+        'method'=>'getMyRecipes',
+        'controller'=>RecipesController::class,
+    ],
+    'get-my-recipes'
+);
+
+$router->map(
+    'POST',
+    '/recipe/add',
+    [
+        'method' => 'createRecipe',
+        'controller' => RecipesController::class,
+    ],
+    'create-recipe',
+);
+
+$router->map(
+    'POST',
+    '/recipe/edit/[i:id]',
+    [
+        'method'=>'editRecipe',
+        'controller'=>RecipesController::class,
+    ],
+    'edit-recipe',
+);
+// $router->map(
+//     'GET',
+//     '/recipe/[i:id]',
+//     [
+//         'method' => 'getRecipe',
+//         'controller' => RecipesController::class,
+//     ],
+//     'get-recipe',
+// );
+// $router->map(
+//     'GET',
+//     '/recipe/[i:id]',
+//     [
+//         'method' => 'getRecipe',
+//         'controller' => RecipesController::class,
+//     ],
+//     'get-recipe',
+// );
+
+
+//=============INGREDIENTS============//
 $router->map(
     'GET',
     '/ingredients',
@@ -101,19 +163,10 @@ $router->map(
 
 $router->map(
     'GET',
-    '/recipe/[i:id]',
-    [
-        'method' => 'getRecipe',
-        'controller' => RecipesController::class,
-    ],
-    'get-recipe',
-);
-$router->map(
-    'GET',
     '/stock/list',
     [
-        'method'=>'listUserIngredients',
-        'controller'=>IngredientsController::class,
+        'method' => 'listUserIngredients',
+        'controller' => IngredientsController::class,
     ],
     'stock-list'
 );
@@ -148,15 +201,15 @@ $router->map(
     'delete-from-stock'
 );
 
-$router->map(
-    'GET',
-    '/checktoken',
-    [
-        'method' => 'checkToken',
-        'controller' => UserController::class,
-    ],
-    'checkToken'
-);
+// $router->map(
+//     'GET',
+//     '/checktoken',
+//     [
+//         'method' => 'checkToken',
+//         'controller' => UserController::class,
+//     ],
+//     'checkToken'
+// );
 
 /* -------------
 --- DISPATCH ---
