@@ -12,12 +12,14 @@ const initialState = {
   loading: true,
   modalComponent: '',
   modalTitle: '',
+  modalUse: '',
   modal: false,
   snackbar: false,
   snackbarMessage: '',
   snackbarSeverity: '',
   stockPanel: false,
   shoppingListPanel: false,
+
 };
 
 const utilsReducer = (state = initialState, action = {}) => {
@@ -40,6 +42,7 @@ const utilsReducer = (state = initialState, action = {}) => {
         modal: true,
         modalComponent: action.component,
         modalTitle: action.title,
+        modalUse: action.use,
       };
     case CLOSE_MODAL:
       return {

@@ -1,4 +1,5 @@
 import { SAVE_USER_INFO, CLEAR_USER_INFO } from 'src/actions/user';
+import { SAVE_MY_RECIPES } from 'src/actions/recipes';
 import { CHANGE_STOCK_QUANTITY, DELETE_INGREDIENT, SAVE_USER_STOCK } from 'src/actions/ingredients';
 import { updateStock, deleteIngredient } from 'src/utils';
 
@@ -17,6 +18,11 @@ const initialState = {
 
 const UserReducer = (state = initialState, action = {}) => {
   switch (action.type) {
+    case SAVE_MY_RECIPES:
+      return {
+        ...state,
+        recipes: action.recipes,
+      };
     case SAVE_USER_STOCK:
       return {
         ...state,

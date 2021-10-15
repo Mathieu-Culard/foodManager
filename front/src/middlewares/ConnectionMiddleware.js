@@ -3,12 +3,18 @@ import {
   SUBMIT_REGISTRATION, clearForm, SUBMIT_CONNECTION, CHECK_TOKEN, logIn, LOG_OUT, logOut,
 } from 'src/actions/connection';
 import { clearAddStock } from 'src/actions/ingredients';
-import { saveUserInfo, clearUserInfo } from 'src/actions/user';
+import { saveUserInfo, clearUserInfo, CLEAR_USER_INFO } from 'src/actions/user';
 import { CLOSE_MODAL, closeModal, openSnackbar } from 'src/actions/utils';
 import { push } from 'connected-react-router';
 
 const ConnectionMiddleware = (store) => (next) => (action) => {
   switch (action.type) {
+    case CLEAR_USER_INFO: {
+      localStorage.clear();
+      store.dispatch(push('/'));
+      next(action);
+      break;
+    }
     case CLOSE_MODAL: {
       store.dispatch(clearForm());
       store.dispatch(clearAddStock());
@@ -79,10 +85,8 @@ const ConnectionMiddleware = (store) => (next) => (action) => {
       break;
     }
     case LOG_OUT: {
-      localStorage.clear();
       store.dispatch(clearUserInfo());
       store.dispatch(openSnackbar('deconnexion effectué', 'success'));
-      store.dispatch(push('/'));
       next(action);
       break;
     }

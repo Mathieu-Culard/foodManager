@@ -12,10 +12,13 @@ import Footer from 'src/containers/Footer';
 import StockPanel from 'src/containers/StockPanel';
 import AddRecipePage from 'src/containers/AddRecipePage';
 // == Composant
-const App = ({ fetchIngredients, fetchPublicRecipes, isLogged }) => {
+const App = ({ fetchIngredients, fetchPublicRecipes, isLogged, clearUserInfo }) => {
   useEffect(() => {
     fetchPublicRecipes();
     fetchIngredients();
+    if (!isLogged) {
+      clearUserInfo();
+    }
   }, []);
 
   return (
@@ -27,6 +30,9 @@ const App = ({ fetchIngredients, fetchPublicRecipes, isLogged }) => {
           <RecipePage />
         </Route>
         <Route path="/add-recipe">
+          <AddRecipePage />
+        </Route>
+        <Route path="/my-recipes/edit-recipe/:id">
           <AddRecipePage />
         </Route>
         <Route path="/my-recipes">

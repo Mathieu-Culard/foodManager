@@ -22,20 +22,20 @@ const Header = ({ openModal, isLogged, logOut }) => {
       )}
       {isLogged && (
         <>
-          {location.pathname === '/my-recipes'
-            && (
-              <Link to="/" className="header_link">
-                Recettes publiques
-              </Link>
-            )}
-          {
-            location.pathname === '/'
-            && (
-              <Link to="/my-recipes" className="header_link">
-                Mes recettes
-              </Link>
-            )
-          }
+          {/* {location.pathname === '/my-recipes'
+            && ( */}
+          <Link to="/" className="header_link">
+            Recettes publiques
+          </Link>
+          {/* )}
+          { */}
+          {/* location.pathname === '/'
+            && ( */}
+          <Link to="/my-recipes" className="header_link">
+            Mes recettes
+          </Link>
+          {/* )
+          } */}
           <a className="header_link" href="#" onClick={() => logOut()}>
             Deconnexion
           </a>

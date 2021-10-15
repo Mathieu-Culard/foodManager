@@ -7,7 +7,7 @@ import IngredientCard from 'src/components/IngredientRecipeCard';
 const RecipePage = ({ fetchRecipe, recipe, isLoading }) => {
   const { id } = useParams();
   useEffect(() => {
-    fetchRecipe(id);
+    fetchRecipe(id, false);
   }, []);
 
   return (

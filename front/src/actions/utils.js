@@ -24,10 +24,11 @@ export const closeSnackbar = () => ({
   type: CLOSE_SNACKBAR,
 });
 
-export const openModal = (title, component) => ({
+export const openModal = (title, component, use) => ({
   type: OPEN_MODAL,
   component,
   title,
+  use,
 });
 
 export const closeModal = () => ({

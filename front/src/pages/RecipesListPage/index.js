@@ -1,22 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import RecipeCard from 'src/components/RecipeCard';
 import { useLocation, Link } from 'react-router-dom';
 import './recipesListPage.scss';
 
-const RecipesListPage = ({ recipes, userRecipes }) => {
+const RecipesListPage = ({
+  recipes, userRecipes, fetchMyRecipes, fetchPublicRecipes, isLogged,
+}) => {
+  useEffect(() => {
+    fetchPublicRecipes();
+    if (isLogged) {
+      fetchMyRecipes();
+    }
+  }, []);
   let recipesList = recipes;
   const location = useLocation();
-
-  if (location.pathname === "/my-recipes") {
+  if (location.pathname === '/my-recipes') {
     recipesList = userRecipes;
   }
 
   return (
-    <>
-      <div className="recipes-list">
+    <div className="recipes-list">
+      <div className="recipes-list__content">
         {recipesList.map((recipe) => (
-          <RecipeCard {...recipe} key={recipe.id} />
+          <RecipeCard {...recipe} key={recipe.id} location={location.pathname} />
         ))}
       </div>
       {
@@ -31,12 +38,13 @@ const RecipesListPage = ({ recipes, userRecipes }) => {
           </Link>
         )
       }
-    </>
+    </div>
   );
 };
 
 RecipesListPage.propTypes = {
   recipes: PropTypes.array.isRequired,
   userRecipes: PropTypes.array.isRequired,
+  fetchMyRecipes: PropTypes.func.isRequired,
 };
 export default RecipesListPage;

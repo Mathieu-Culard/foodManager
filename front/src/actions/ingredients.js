@@ -7,6 +7,24 @@ export const DELETE_INGREDIENT = 'DELETE_INGREDIENT';
 export const ADD_TO_STOCK = 'ADD_TO_STOCK';
 export const CHANGE_VALUE = 'CHANGE_VALUE';
 export const CLEAR_ADD_STOCK = 'CLEAR_ADD_STOCK';
+export const ADD_TO_RECIPE = 'ADD_TO_RECIPE';
+export const DELETE_RECIPE_INGREDIENT = 'DELETE_RECIPE_INGREDIENT';
+export const CHANGE_RECIPE_INGREDIENT_QUANTITY = 'CHANGE_RECIPE_INGREDIENT_QUANTITY';
+
+export const changeRecipeIngredientQuantity = (id, newValue) => ({
+  type: CHANGE_RECIPE_INGREDIENT_QUANTITY,
+  id,
+  newValue,
+});
+
+export const deleteRecipeIngredient = (id) => ({
+  type: DELETE_RECIPE_INGREDIENT,
+  id,
+});
+
+export const addToRecipe = () => ({
+  type: ADD_TO_RECIPE,
+});
 
 export const clearAddStock = () => ({
   type: CLEAR_ADD_STOCK,

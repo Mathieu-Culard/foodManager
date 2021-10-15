@@ -7,6 +7,7 @@ import {
   FETCH_INGREDIENTS,
   saveIngredients,
   ADD_TO_STOCK,
+  ADD_TO_RECIPE,
   fetchUserStock,
   FETCH_USER_STOCK,
   saveUserStock,
@@ -14,6 +15,12 @@ import {
 
 const IngredientsMiddleware = (store) => (next) => (action) => {
   switch (action.type) {
+    case ADD_TO_RECIPE:
+      action.ingredientsList = store.getState().ingredients.ingredientsList;
+      action.ingredientsToAdd = store.getState().ingredients.addStock;
+      store.dispatch(closeModal());
+      next(action);
+      break;
     case ADD_TO_STOCK: {
       const { addStock } = store.getState().ingredients;
       console.log('sheeeeh');
