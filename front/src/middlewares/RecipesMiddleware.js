@@ -3,6 +3,7 @@ import { push } from 'connected-react-router';
 import {
   FETCH_PUBLIC_RECIPES,
   FETCH_RECIPE,
+  fetchMyRecipes,
   saveRecipes,
   saveCurrentRecipe,
   ADD_NEW_RECIPE,
@@ -11,22 +12,41 @@ import {
   clearAddRecipeForm,
   saveMyRecipes,
   setInfoForEdit,
+  DELETE_RECIPE,
 } from 'src/actions/recipes';
 import { endLoad } from 'src/actions/utils';
 
 const RecipesMiddleware = (store) => (next) => (action) => {
   switch (action.type) {
+    case DELETE_RECIPE: {
+      axios.delete(`http://localhost:8000/recipe/delete/${action.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+          },
+        })
+        .then((response)=>{
+          console.log(response.data);
+          store.dispatch(fetchMyRecipes());
+        })
+        .catch((error)=>{
+          console.log(error);
+        });
+      next(action);
+      break;
+    }
     case FETCH_MY_RECIPES: {
       axios.get('http://localhost:8000/recipe/my-recipes',
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt')}`,
           },
-        }).then((response) => {
-        store.dispatch(saveMyRecipes(response.data));
-      }).catch((error) => {
-        console.log(error);
-      });
+        })
+        .then((response) => {
+          store.dispatch(saveMyRecipes(response.data));
+        }).catch((error) => {
+          console.log(error);
+        });
       next(action);
       break;
     }
@@ -62,13 +82,13 @@ const RecipesMiddleware = (store) => (next) => (action) => {
             'Content-Type': 'multipart/form-data',
           },
         }).then((response) => {
-        console.log(response);
-        store.dispatch(clearAddRecipeForm());
-        store.dispatch(push('/my-recipes'));
-        console.log('mais dou ?');
-      }).catch((error) => {
-        console.log(error);
-      });
+          console.log(response);
+          store.dispatch(clearAddRecipeForm());
+          store.dispatch(push('/my-recipes'));
+          console.log('mais dou ?');
+        }).catch((error) => {
+          console.log(error);
+        });
       next(action);
       break;
     }
@@ -103,13 +123,13 @@ const RecipesMiddleware = (store) => (next) => (action) => {
             'Content-Type': 'multipart/form-data',
           },
         }).then((response) => {
-        console.log(response);
-        store.dispatch(clearAddRecipeForm());
-        store.dispatch(push('/my-recipes'));
-        console.log('mais dou ?');
-      }).catch((error) => {
-        console.log(error);
-      });
+          console.log(response);
+          store.dispatch(clearAddRecipeForm());
+          store.dispatch(push('/my-recipes'));
+          console.log('mais dou ?');
+        }).catch((error) => {
+          console.log(error);
+        });
       next(action);
       break;
     }

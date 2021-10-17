@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import RecipesListPage from 'src/pages/RecipesListPage';
-import { fetchMyRecipes, fetchPublicRecipes } from 'src/actions/recipes';
+import { fetchMyRecipes, fetchPublicRecipes, deleteRecipe } from 'src/actions/recipes';
 
 const mapStateToProps = (state) => ({
   isLogged: state.connection.isLogged,
@@ -12,6 +12,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   fetchMyRecipes: () => dispatch(fetchMyRecipes()),
   fetchPublicRecipes: () => dispatch(fetchPublicRecipes()),
+  deleteRecipe: (id) => dispatch(deleteRecipe(id)),
 });
 
 export default connect(

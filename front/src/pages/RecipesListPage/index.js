@@ -5,7 +5,7 @@ import { useLocation, Link } from 'react-router-dom';
 import './recipesListPage.scss';
 
 const RecipesListPage = ({
-  recipes, userRecipes, fetchMyRecipes, fetchPublicRecipes, isLogged,
+  recipes, userRecipes, fetchMyRecipes, fetchPublicRecipes, isLogged, deleteRecipe
 }) => {
   useEffect(() => {
     fetchPublicRecipes();
@@ -23,7 +23,12 @@ const RecipesListPage = ({
     <div className="recipes-list">
       <div className="recipes-list__content">
         {recipesList.map((recipe) => (
-          <RecipeCard {...recipe} key={recipe.id} location={location.pathname} />
+          <RecipeCard
+            {...recipe}
+            key={recipe.id}
+            location={location.pathname}
+            deleteRecipe={deleteRecipe}
+          />
         ))}
       </div>
       {

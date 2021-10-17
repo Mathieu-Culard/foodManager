@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import './recipeCard.scss';
 
-const RecipeCard = ({ name, id, image, location }) => (
+const RecipeCard = ({ name, id, image, location, deleteRecipe }) => (
 
   <div className="recipe-card">
     <div className="recipe-card__content">
@@ -17,7 +17,7 @@ const RecipeCard = ({ name, id, image, location }) => (
             <Link to={`/my-recipes/edit-recipe/${id}`}>
               <button type="button">u</button>
             </Link>
-            <button type="button">d</button>
+            <button type="button" onClick={() => deleteRecipe(id)}>d</button>
           </div>
         )}
     </div>

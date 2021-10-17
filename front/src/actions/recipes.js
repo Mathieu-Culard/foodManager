@@ -15,6 +15,12 @@ export const SAVE_MY_RECIPES = 'SAVE_MY_RECIPES';
 export const CLEAR_ADD_RECIPE_FORM = 'CLEAR_ADD_RECIPE_FORM';
 export const SET_INFO_FOR_EDIT = 'SET_INFO_FOR_EDIT';
 export const EDIT_RECIPE = 'EDIT_RECIPE';
+export const DELETE_RECIPE = 'DELETE_RECIPE';
+
+export const deleteRecipe = (id) => ({
+  type: DELETE_RECIPE,
+  id,
+});
 
 export const editRecipe = (id) => ({
   type: EDIT_RECIPE,
