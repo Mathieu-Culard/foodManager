@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\User;
 use App\Models\Ingredient;
+use Symfony\Component\VarDumper\Caster\ArgsStub;
 
 class IngredientsController
 {
@@ -25,7 +26,7 @@ class IngredientsController
     $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
     if ($granted['message'] === "success") {
       $data = json_decode(file_get_contents("php://input"));
-      $newValue = $data->newValue;
+      $newValue = filter_var($data->newValue,FILTER_VALIDATE_INT);
       $response = Ingredient::updateStockIngredient($urlParam['id'], $granted['userId'], $newValue);
       if (!empty($response)) {
         http_response_code(500);
@@ -68,7 +69,15 @@ class IngredientsController
     $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
     if ($granted['message'] === "success") {
       $data = json_decode(file_get_contents("php://input"));
-      $ingredients = $data->addStock;
+      $ingredients=[];
+      $args = [
+        'id' => FILTER_VALIDATE_INT,
+        'quantity' => FILTER_VALIDATE_INT,
+      ];
+      foreach($data->addStock as $ingredient){
+        $ingredients[]=filter_var_array(get_object_vars($ingredient),$args);
+      }
+      // $ingredients = $data->addStock;
       $response = Ingredient::addToStock($ingredients, $granted['userId']);
       echo json_encode($response);
     } else {

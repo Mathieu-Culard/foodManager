@@ -130,6 +130,16 @@ $router->map(
     ],
     'edit-recipe',
 );
+
+$router->map(
+    'DELETE',
+    '/recipe/delete/[i:id]',
+    [
+        'method'=>'deleteRecipe',
+        'controller'=>RecipesController::class,
+    ],
+    'delete-recipe',
+);
 // $router->map(
 //     'GET',
 //     '/recipe/[i:id]',

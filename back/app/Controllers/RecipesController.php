@@ -18,7 +18,7 @@ class RecipesController
     echo json_encode($recipes);
   }
 
-   /**
+  /**
    * return an array including all infos about a recipe
    */
   public function getRecipe($urlParam)
@@ -92,6 +92,23 @@ class RecipesController
     } else {
       http_response_code(401);
       echo json_encode('vous devez vous reconnecter');
+    }
+  }
+
+  public function deleteRecipe($urlParam)
+  {
+    $id = $urlParam['id'];
+    $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
+    if ($granted['message'] === "success") {
+      $recipe = Recipe::find($id);
+      $response = $recipe->delete();
+      Step::deleteSteps($id);
+      Ingredient::deleteRecipeIngredients($id);
+      if ($response) {
+        http_response_code(204);
+      } else {
+        http_response_code(404);
+      }
     }
   }
   /**

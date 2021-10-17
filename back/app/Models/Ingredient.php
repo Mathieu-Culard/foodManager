@@ -105,18 +105,18 @@ class Ingredient extends CoreModel  implements JsonSerializable
     $pdo = Database::getPDO();
     foreach ($ingredients as $ingredient) {
       // update the desired ingredient if it already exist in the user's stock
-      if (self::existInStock($ingredient->id, $userId)) {
+      if (self::existInStock($ingredient['id'], $userId)) {
         $sql = "SELECT quantity
           FROM users_ingredients
           WHERE user_id = :user_id
           AND ingredient_id=:ingredient_id";
         $statement = $pdo->prepare($sql);
-        $statement->bindValue(':ingredient_id', $ingredient->id, PDO::PARAM_INT);
+        $statement->bindValue(':ingredient_id', $ingredient['id'], PDO::PARAM_INT);
         $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
         $statement->execute();
         $result = $statement->fetch(PDO::FETCH_ASSOC);
-        $quantity = $result['quantity'] + $ingredient->quantity;
-        $response = self::updateStockIngredient($ingredient->id, $userId, $quantity);
+        $quantity = $result['quantity'] + $ingredient['quantity'];
+        $response = self::updateStockIngredient($ingredient['id'], $userId, $quantity);
         if ($response) {
           return $response;
         }
@@ -137,8 +137,8 @@ class Ingredient extends CoreModel  implements JsonSerializable
         ";
         try {
           $statement = $pdo->prepare($sql);
-          $statement->bindValue(':quantity', $ingredient->quantity, PDO::PARAM_INT);
-          $statement->bindValue(':ingredient_id', $ingredient->id, PDO::PARAM_INT);
+          $statement->bindValue(':quantity', $ingredient['quantity'], PDO::PARAM_INT);
+          $statement->bindValue(':ingredient_id', $ingredient['id'], PDO::PARAM_INT);
           $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
           $statement->execute();
         } catch (PDOException $e) {

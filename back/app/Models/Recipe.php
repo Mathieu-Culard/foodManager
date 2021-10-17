@@ -145,7 +145,20 @@ class Recipe extends CoreModel  implements JsonSerializable
       ];
     }
   }
-  
+  public function delete()
+  {
+    $pdo = Database::getPDO();
+
+    // Ecriture de la requête
+    $sql = 'DELETE FROM `recipes`
+                WHERE id = :id';
+
+    $statement = $pdo->prepare($sql);
+    $statement->bindValue(':id', $this->id, PDO::PARAM_INT);
+    $statement->execute();
+    // On retourne VRAI, si au moins une ligne supprimée
+    return ($statement->rowCount() > 0);
+  }
   /**
    * update recipe infos
    */
