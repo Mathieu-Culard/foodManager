@@ -11,6 +11,7 @@ import {
   fetchUserStock,
   FETCH_USER_STOCK,
   saveUserStock,
+  VALIDATE_SHOPPING_LIST,
 } from 'src/actions/ingredients';
 
 const IngredientsMiddleware = (store) => (next) => (action) => {
@@ -26,14 +27,17 @@ const IngredientsMiddleware = (store) => (next) => (action) => {
       console.log('sheeeeh');
       console.log(addStock);
       axios.post('http://localhost:8000/stock/add',
-        { addStock },
+        {
+          identifier: action.identifier,
+          addStock,
+        },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt')}`,
           },
         })
         .then((response) => {
-          store.dispatch(fetchUserStock());
+          store.dispatch(fetchUserStock(action.identifier));
           store.dispatch(closeModal());
           console.log('xxxxxxxxxxx');
           console.log(response);
@@ -50,9 +54,12 @@ const IngredientsMiddleware = (store) => (next) => (action) => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt')}`,
           },
+          params: {
+            identifier: action.identifier,
+          },
         })
         .then((response) => {
-          store.dispatch(saveUserStock(response.data));
+          store.dispatch(saveUserStock(response.data, action.identifier));
         })
         .catch((error) => {
           console.log(error);
@@ -72,7 +79,10 @@ const IngredientsMiddleware = (store) => (next) => (action) => {
     }
     case CHANGE_STOCK_QUANTITY: {
       axios.post(`http://localhost:8000/stock/edit/${action.id}`,
-        { newValue: action.newValue },
+        {
+          newValue: action.newValue,
+          identifier: action.identifier,
+        },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt')}`,
@@ -96,12 +106,32 @@ const IngredientsMiddleware = (store) => (next) => (action) => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt')}`,
           },
+          params: {
+            identifier: action.identifier,
+          },
         })
         .then((response) => {
           next(action);
         }).catch((error) => {
           console.log(error.response);
         });
+      break;
+    }
+    case VALIDATE_SHOPPING_LIST: {
+      axios.post('http://localhost:8000/shop/validate',
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+          },
+        })
+        .then((response) => {
+          store.dispatch(fetchUserStock('stock'));
+          next(action);
+        }).catch((error) => {
+          console.log(error);
+        });
+     
       break;
     }
     default:

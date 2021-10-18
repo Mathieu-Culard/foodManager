@@ -2,7 +2,12 @@ export const updateStock = (stock, id, newValue) => {
   const newStock = stock.map((cat) => {
     const index = cat.ingredients.findIndex((ingredient) => ingredient.id === id);
     if (index > -1) {
-      cat.ingredients[index].quantity = newValue;
+      if (newValue === "0") {
+        console.log('blerbler');
+        cat.ingredients.splice(index, 1);
+      } else {
+        cat.ingredients[index].quantity = newValue;
+      }
     }
     return cat;
   });

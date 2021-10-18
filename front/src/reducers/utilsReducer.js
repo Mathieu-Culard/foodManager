@@ -18,8 +18,7 @@ const initialState = {
   snackbarMessage: '',
   snackbarSeverity: '',
   stockPanel: false,
-  shoppingListPanel: false,
-
+  shopPanel: false,
 };
 
 const utilsReducer = (state = initialState, action = {}) => {

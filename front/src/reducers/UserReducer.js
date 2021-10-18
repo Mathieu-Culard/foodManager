@@ -1,6 +1,6 @@
 import { SAVE_USER_INFO, CLEAR_USER_INFO } from 'src/actions/user';
 import { SAVE_MY_RECIPES } from 'src/actions/recipes';
-import { CHANGE_STOCK_QUANTITY, DELETE_INGREDIENT, SAVE_USER_STOCK } from 'src/actions/ingredients';
+import { CHANGE_STOCK_QUANTITY, DELETE_INGREDIENT, SAVE_USER_STOCK, VALIDATE_SHOPPING_LIST } from 'src/actions/ingredients';
 import { updateStock, deleteIngredient } from 'src/utils';
 
 const initialState = {
@@ -12,12 +12,17 @@ const initialState = {
   avatar: '',
   role: '',
   stock: [],
-  shoppingList: [],
+  shop: [],
   recipes: [],
 };
 
 const UserReducer = (state = initialState, action = {}) => {
   switch (action.type) {
+    case VALIDATE_SHOPPING_LIST:
+      return {
+        ...state,
+        shop: [],
+      };
     case SAVE_MY_RECIPES:
       return {
         ...state,
@@ -26,7 +31,7 @@ const UserReducer = (state = initialState, action = {}) => {
     case SAVE_USER_STOCK:
       return {
         ...state,
-        stock: action.stock,
+        [action.identifier]: action.stock,
       };
     case SAVE_USER_INFO:
       return {
@@ -44,19 +49,29 @@ const UserReducer = (state = initialState, action = {}) => {
         avatar: '',
         role: '',
         stock: [],
-        shoppingList: [],
+        shop: [],
         recipes: [],
       };
-    case CHANGE_STOCK_QUANTITY:
-      return {
-        ...state,
-        stock: updateStock(state.stock, action.id, action.newValue),
-      };
-    case DELETE_INGREDIENT:
-      return {
-        ...state,
-        stock: deleteIngredient(state.stock, action.id),
+    case CHANGE_STOCK_QUANTITY: {
+      let list = state.stock;
+      if (action.identifier === 'shop') {
+        list = state.shop;
       }
+      return {
+        ...state,
+        [action.identifier]: updateStock(list, action.id, action.newValue),
+      };
+    }
+    case DELETE_INGREDIENT: {
+      let list = state.stock;
+      if (action.identifier === 'shop') {
+        list = state.shop;
+      }
+      return {
+        ...state,
+        [action.identifier]: deleteIngredient(list, action.id),
+      };
+    }
     default: return state;
   }
 };

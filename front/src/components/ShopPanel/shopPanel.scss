@@ -1,0 +1,63 @@
+.shop-panel {
+  height: 92vh;
+  position: fixed;
+  right: 0;
+  border: 1px solid black;
+  z-index: 999;
+  background-color: white;
+  overflow-y: scroll;
+  overflow-x: hidden;
+
+  &__button {
+    position: relative;
+    left: 0%;
+    top: 0;
+  }
+
+  &__content {
+    &__category {
+      width: 95%;
+      margin: auto;
+
+      &__name {
+        margin: 2rem 0 1rem 0;
+      }
+    }
+  }
+}
+
+.close {
+  width: 5%;
+  animation: 1s fold;
+  overflow: hidden;
+
+  .shop-panel__content>* {
+    display: none;
+  }
+
+}
+
+.open {
+  width: 20%;
+  animation: 1s unfold;
+}
+
+@keyframes unfold {
+  from {
+    width: 5%;
+  }
+
+  to {
+    width: 20%;
+  }
+}
+
+@keyframes fold {
+  from {
+    width: 20%;
+  }
+
+  to {
+    width: 5%;
+  }
+}

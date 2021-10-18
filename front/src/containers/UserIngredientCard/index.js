@@ -8,11 +8,11 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  changeQuantity: (id, newValue) => dispatch(changeStockQuantity(id, newValue)),
-  deleteIngredient: (id) => dispatch(deleteIngredient(id)),
+  changeQuantity: (id, newValue, identifier) => dispatch(changeStockQuantity(id, newValue, identifier)),
+  deleteIngredient: (id, identifier) => dispatch(deleteIngredient(id, identifier)),
   deleteRecipeIngredient: (id) => dispatch(deleteRecipeIngredient(id)),
   changeRecipeIngredientQuantity:
-  (id, newValue) => dispatch(changeRecipeIngredientQuantity(id, newValue)),
+    (id, newValue) => dispatch(changeRecipeIngredientQuantity(id, newValue)),
 });
 
 export default connect(

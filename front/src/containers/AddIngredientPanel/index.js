@@ -9,7 +9,7 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  addToStock: () => dispatch(addToStock()),
+  addToStock: (identifier) => dispatch(addToStock(identifier)),
   changeValue: (id, quantity) => dispatch(changeValue(id, quantity)),
   addToRecipe: () => dispatch(addToRecipe()),
 });

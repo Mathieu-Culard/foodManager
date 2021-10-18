@@ -10,6 +10,11 @@ export const CLEAR_ADD_STOCK = 'CLEAR_ADD_STOCK';
 export const ADD_TO_RECIPE = 'ADD_TO_RECIPE';
 export const DELETE_RECIPE_INGREDIENT = 'DELETE_RECIPE_INGREDIENT';
 export const CHANGE_RECIPE_INGREDIENT_QUANTITY = 'CHANGE_RECIPE_INGREDIENT_QUANTITY';
+export const VALIDATE_SHOPPING_LIST = 'VALIDATE_SHOPPING_LIST';
+
+export const validateShoppingList = () => ({
+  type: VALIDATE_SHOPPING_LIST,
+});
 
 export const changeRecipeIngredientQuantity = (id, newValue) => ({
   type: CHANGE_RECIPE_INGREDIENT_QUANTITY,
@@ -30,17 +35,20 @@ export const clearAddStock = () => ({
   type: CLEAR_ADD_STOCK,
 });
 
-export const addToStock = () => ({
+export const addToStock = (identifier) => ({
   type: ADD_TO_STOCK,
+  identifier,
 });
 
-export const fetchUserStock = () => ({
+export const fetchUserStock = (identifier) => ({
   type: FETCH_USER_STOCK,
+  identifier,
 });
 
-export const saveUserStock = (stock) => ({
+export const saveUserStock = (stock, identifier) => ({
   type: SAVE_USER_STOCK,
   stock,
+  identifier,
 });
 
 export const changeValue = (id, quantity) => ({
@@ -58,13 +66,15 @@ export const saveIngredients = (ingredients) => ({
   ingredients,
 });
 
-export const changeStockQuantity = (id, newValue) => ({
+export const changeStockQuantity = (id, newValue, identifier) => ({
   type: CHANGE_STOCK_QUANTITY,
   id,
   newValue,
+  identifier,
 });
 
-export const deleteIngredient = (id) => ({
+export const deleteIngredient = (id, identifier) => ({
   type: DELETE_INGREDIENT,
   id,
+  identifier,
 });

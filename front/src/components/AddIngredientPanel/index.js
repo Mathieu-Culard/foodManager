@@ -12,7 +12,7 @@ const AddIngredientPanel = ({ ingredients, addToStock, addToRecipe, addedValues,
         addToRecipe();
         break;
       default:
-        addToStock();
+        addToStock(modalUse);
     }
   };
 
@@ -25,6 +25,7 @@ const AddIngredientPanel = ({ ingredients, addToStock, addToRecipe, addedValues,
             {...category}
             changeValue={changeValue}
             addedValues={addedValues}
+            type={modalUse}
           />
         ))}
       </div>

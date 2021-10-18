@@ -10,6 +10,7 @@ import RecipesListPage from 'src/containers/RecipesListPage';
 import RecipePage from 'src/containers/RecipePage';
 import Footer from 'src/containers/Footer';
 import StockPanel from 'src/containers/StockPanel';
+import ShopPanel from 'src/containers/ShopPanel';
 import AddRecipePage from 'src/containers/AddRecipePage';
 // == Composant
 const App = ({ fetchIngredients, fetchPublicRecipes, isLogged, clearUserInfo }) => {
@@ -25,6 +26,7 @@ const App = ({ fetchIngredients, fetchPublicRecipes, isLogged, clearUserInfo }) 
     <div className="app">
       <Header />
       {isLogged && <StockPanel />}
+      {isLogged && <ShopPanel />}
       <Switch>
         <Route path="/recipe/:id">
           <RecipePage />
