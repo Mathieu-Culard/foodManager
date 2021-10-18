@@ -26,8 +26,10 @@ class IngredientsController
     $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
     if ($granted['message'] === "success") {
       $data = json_decode(file_get_contents("php://input"));
-      $newValue = filter_var($data->newValue,FILTER_VALIDATE_INT);
-      $response = Ingredient::updateStockIngredient($urlParam['id'], $granted['userId'], $newValue);
+      $newValue = filter_var($data->newValue, FILTER_VALIDATE_INT);
+      $identifier = filter_var($data->identifier, FILTER_SANITIZE_STRING);
+      $needed = $identifier === 'shop' ? 1 : 0;
+      $response = Ingredient::updateStockIngredient($urlParam['id'], $granted['userId'], $newValue, $needed);
       if (!empty($response)) {
         http_response_code(500);
         echo json_encode('serveur en pls');
@@ -50,7 +52,9 @@ class IngredientsController
   {
     $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
     if ($granted['message'] === "success") {
-      Ingredient::deleteStockIngredient($urlParam['id'], $granted['userId']);
+      $identifier = filter_var($_GET['identifier'], FILTER_SANITIZE_STRING);
+      $needed = $identifier === 'shop' ? 1 : 0;
+      Ingredient::deleteStockIngredient($urlParam['id'], $granted['userId'], $needed);
       if (!empty($response)) {
         http_response_code(500);
         echo json_encode('serveur en pls');
@@ -62,23 +66,25 @@ class IngredientsController
   }
 
   /**
-   * delete add in the user stock
+   * add ingredients to user stock or user shopping list
    */
   public function createStockIngredient()
   {
     $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
     if ($granted['message'] === "success") {
       $data = json_decode(file_get_contents("php://input"));
-      $ingredients=[];
+      $ingredients = [];
+      $identifier = filter_var($data->identifier, FILTER_SANITIZE_STRING);
+      $needed = $identifier == 'shop' ? 1 : 0;
       $args = [
         'id' => FILTER_VALIDATE_INT,
         'quantity' => FILTER_VALIDATE_INT,
       ];
-      foreach($data->addStock as $ingredient){
-        $ingredients[]=filter_var_array(get_object_vars($ingredient),$args);
+      foreach ($data->addStock as $ingredient) {
+        $ingredients[] = filter_var_array(get_object_vars($ingredient), $args);
       }
       // $ingredients = $data->addStock;
-      $response = Ingredient::addToStock($ingredients, $granted['userId']);
+      $response = Ingredient::addToStock($ingredients, $granted['userId'], $needed);
       echo json_encode($response);
     } else {
       http_response_code(401);
@@ -93,8 +99,29 @@ class IngredientsController
   {
     $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
     if ($granted['message'] === "success") {
-      $ingredients = Ingredient::findUserIngredients($granted['userId']);
+      $data = json_decode(file_get_contents("php://input"));
+      $identifier = filter_var($_GET['identifier'], FILTER_SANITIZE_STRING);
+      $ingredients = Ingredient::findUserIngredients($granted['userId'], $identifier);
       echo json_encode($ingredients);
+    } else {
+      http_response_code(401);
+      echo json_encode('vous devez vous reconnecter');
+    }
+  }
+
+  /**
+   * add shoppingList elements into user stock and clear it
+   */
+  public function validateShoppingList()
+  {
+    $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
+    if ($granted['message'] === "success") {
+      $shoppingList = Ingredient::getShoppingList($granted['userId']);
+      Ingredient::addToStock($shoppingList, $granted['userId'], 0);
+      foreach ($shoppingList as $ingredient) {
+        Ingredient::deleteStockIngredient($ingredient['id'],$granted['userId'],1);
+      }
+      // echo json_encode($shoppingList);
     } else {
       http_response_code(401);
       echo json_encode('vous devez vous reconnecter');

@@ -47,7 +47,7 @@ class Ingredient extends CoreModel  implements JsonSerializable
     $ingredients = [];
     foreach ($categories as $category) {
       $pdo = Database::getPDO();
-      $sql = "SELECT i.id, i.name,i.image,i.min_buy, u.unity FROM ingredients i
+      $sql = "SELECT i.id, i.name,i.image,i.min_buy as minBuy, u.unity FROM ingredients i
       LEFT JOIN unity u ON u.id = i.unity_id
       WHERE i.category_id =" . $category['id'];
       $statement = $pdo->query($sql);
@@ -57,34 +57,51 @@ class Ingredient extends CoreModel  implements JsonSerializable
     return $ingredients;
   }
 
+  public static function getShoppingList($userId)
+  {
+    $pdo = Database::getPDO();
+    $sql = "SELECT ingredient_id as id, quantity 
+          FROM users_ingredients 
+          WHERE user_id = :user_id
+          AND needed =1";
+    $statement = $pdo->prepare($sql);
+    $statement->bindValue(':user_id', $userId);
+    $statement->execute();
+    $shoppingList = $statement->fetchAll(PDO::FETCH_ASSOC);
+    return $shoppingList;
+  }
+
   /**
    * return users's ingredients sorted by food category
    */
-  public static function findUserIngredients($userId)
+  public static function findUserIngredients($userId, $identifier = 'stock')
   {
     $categories = self::getCategories();
     $ingredients = [];
+    $needed = $identifier == 'shop' ? 1 : 0;
     foreach ($categories as $category) {
 
       $pdo = Database::getPDO();
-      $sql = "SELECT i.id, i.name,i.image, ui.quantity, u.unity
+      $sql = "SELECT i.id, i.name,i.image, ui.quantity, u.unity, i.min_buy as minBuy
         FROM ingredients i
         INNER JOIN users_ingredients ui 
         ON ui.ingredient_id = i.id
         LEFT JOIN unity u 
         ON u.id= i.unity_id
         WHERE ui.user_id = :userId 
-        AND ui.needed=0
+        AND ui.needed= :needed
         AND i.category_id= :categoryId";
       $preparedQuery = $pdo->prepare($sql);
       $preparedQuery->bindValue(':userId', $userId);
       $preparedQuery->bindValue(':categoryId', $category['id']);
+      $preparedQuery->bindValue(':needed', $needed);
       $preparedQuery->execute();
       $categoryIngredients = $preparedQuery->fetchAll(PDO::FETCH_CLASS, static::class);
       array_push($ingredients, ['name' => $category['name'], 'ingredients' => $categoryIngredients]);
     }
     return $ingredients;
   }
+
   /**
    * return all food category
    */
@@ -98,25 +115,28 @@ class Ingredient extends CoreModel  implements JsonSerializable
   }
 
   /**
-   * add various ingredients to user's stock
+   * add various ingredients to user's stock or users's shopping list
    */
-  public static function addToStock($ingredients, $userId)
+  public static function addToStock($ingredients, $userId, $needed)
   {
     $pdo = Database::getPDO();
+    // $needed = $identifier == 'shop' ? 1 : 0;
     foreach ($ingredients as $ingredient) {
       // update the desired ingredient if it already exist in the user's stock
-      if (self::existInStock($ingredient['id'], $userId)) {
+      if (self::existInStock($ingredient['id'], $userId, $needed)) {
         $sql = "SELECT quantity
           FROM users_ingredients
           WHERE user_id = :user_id
-          AND ingredient_id=:ingredient_id";
+          AND ingredient_id=:ingredient_id
+          AND needed = :needed";
         $statement = $pdo->prepare($sql);
         $statement->bindValue(':ingredient_id', $ingredient['id'], PDO::PARAM_INT);
+        $statement->bindValue(':needed', $needed, PDO::PARAM_INT);
         $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
         $statement->execute();
         $result = $statement->fetch(PDO::FETCH_ASSOC);
         $quantity = $result['quantity'] + $ingredient['quantity'];
-        $response = self::updateStockIngredient($ingredient['id'], $userId, $quantity);
+        $response = self::updateStockIngredient($ingredient['id'], $userId, $quantity, $needed);
         if ($response) {
           return $response;
         }
@@ -132,7 +152,7 @@ class Ingredient extends CoreModel  implements JsonSerializable
           :user_id,
           :ingredient_id,
           :quantity,
-          0
+          :needed
           )
         ";
         try {
@@ -140,6 +160,7 @@ class Ingredient extends CoreModel  implements JsonSerializable
           $statement->bindValue(':quantity', $ingredient['quantity'], PDO::PARAM_INT);
           $statement->bindValue(':ingredient_id', $ingredient['id'], PDO::PARAM_INT);
           $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
+          $statement->bindValue(':needed', $needed, PDO::PARAM_INT);
           $statement->execute();
         } catch (PDOException $e) {
           return $e->errorInfo;
@@ -198,16 +219,18 @@ class Ingredient extends CoreModel  implements JsonSerializable
   /**
    *check if an ingredients is already present in user's stock
    */
-  public static function existInStock($id, $userId)
+  public static function existInStock($id, $userId, $needed)
   {
     $pdo = Database::getPDO();
     $sql = " SELECT COUNT(*)
             FROM users_ingredients
             WHERE user_id = :user_id
-            AND ingredient_id=:ingredient_id";
+            AND ingredient_id=:ingredient_id
+            AND needed= :needed";
     $statement = $pdo->prepare($sql);
     $statement->bindValue(':ingredient_id', $id, PDO::PARAM_INT);
     $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
+    $statement->bindValue(':needed', $needed, PDO::PARAM_INT);
     $statement->execute();
     $count = $statement->fetchColumn();
     if ($count > 0) {
@@ -219,30 +242,36 @@ class Ingredient extends CoreModel  implements JsonSerializable
   /**
    * update quantity of an ingredient in user's stock
    */
-  public static function updateStockIngredient($id, $userId, $quantity)
+  public static function updateStockIngredient($id, $userId, $quantity, $needed)
   {
-    try {
-      $pdo = Database::getPDO();
-      $sql = "
-    UPDATE users_ingredients
-    SET quantity= :quantity
-    WHERE ingredient_id= :id
-    AND user_id= :userId
-    ";
-      $statement = $pdo->prepare($sql);
-      $statement->bindValue(':quantity', $quantity, PDO::PARAM_INT);
-      $statement->bindValue(':id', $id, PDO::PARAM_INT);
-      $statement->bindValue(':userId', $userId, PDO::PARAM_INT);
-      $statement->execute();
-    } catch (PDOException $e) {
-      return $e->errorInfo;
+    if ($quantity != 0) {
+      try {
+        $pdo = Database::getPDO();
+        $sql = "
+          UPDATE users_ingredients
+          SET quantity= :quantity
+          WHERE ingredient_id= :id
+          AND user_id= :userId
+          AND needed = :needed
+        ";
+        $statement = $pdo->prepare($sql);
+        $statement->bindValue(':quantity', $quantity, PDO::PARAM_INT);
+        $statement->bindValue(':id', $id, PDO::PARAM_INT);
+        $statement->bindValue(':userId', $userId, PDO::PARAM_INT);
+        $statement->bindValue(':needed', $needed, PDO::PARAM_INT);
+        $statement->execute();
+      } catch (PDOException $e) {
+        return $e->errorInfo;
+      }
+    } else {
+      self::deleteStockIngredient($id, $userId, $needed);
     }
   }
 
   /**
    * delete ingredient in user's stock
    */
-  public static function deleteStockIngredient($id, $userId)
+  public static function deleteStockIngredient($id, $userId, $needed)
   {
     try {
       $pdo = Database::getPDO();
@@ -250,9 +279,11 @@ class Ingredient extends CoreModel  implements JsonSerializable
     DELETE FROM users_ingredients
     WHERE ingredient_id= :id
     AND user_id= :userId
+    AND needed = :needed
     ";
       $statement = $pdo->prepare($sql);
       $statement->bindValue(':id', $id, PDO::PARAM_INT);
+      $statement->bindValue(':needed', $needed, PDO::PARAM_INT);
       $statement->bindValue(':userId', $userId, PDO::PARAM_INT);
       $statement->execute();
     } catch (PDOException $e) {

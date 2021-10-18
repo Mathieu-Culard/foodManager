@@ -112,7 +112,7 @@ class User extends CoreModel implements JsonSerializable
         }
     }
 
-     /**
+    /**
      * retrive all the data that app needs when a user connects
      */
     public function getConnectionInfo()
@@ -128,12 +128,13 @@ class User extends CoreModel implements JsonSerializable
                 'role' => $this->getRole(),
                 'avatar' => $this->getAvatar(),
                 'stock' => Ingredient::findUserIngredients($this->getId()),
+                'shop' => Ingredient::findUserIngredients($this->getId(),'shop'),
                 'recipes' => Recipe::findUserRecipes($this->getId()),
             ]
         ]);
     }
 
-     /**
+    /**
      * create a JWT token that the user will use to access the API
      */
     public function createToken()
@@ -161,7 +162,7 @@ class User extends CoreModel implements JsonSerializable
         return $jwt;
     }
 
-    
+
     public static function checkToken($auth)
     {
         $secret_key = "TEST";

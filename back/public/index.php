@@ -211,6 +211,15 @@ $router->map(
     'delete-from-stock'
 );
 
+$router->map(
+    'POST',
+    '/shop/validate',
+    [
+        'method'=>'validateShoppingList',
+        'controller'=>IngredientsController::class,
+    ],
+    'validate-shopping-list'
+);
 // $router->map(
 //     'GET',
 //     '/checktoken',
