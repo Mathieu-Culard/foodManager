@@ -33,12 +33,13 @@ class CoreModel
   //     }
   // }
 
-  
-  public static function createPicture($name){
+
+  public static function createPicture($name, $folder = 'recipes')
+  {
     $arr = explode(".", $_FILES['picture']['name']);
     $ext = end($arr);
-    $picName = $name . "." . $ext;
-    move_uploaded_file($_FILES['picture']['tmp_name'], __DIR__ . "/../../public/assets/recipes/" . $picName);
+    $picName = str_replace(' ','-',$name) . "." . $ext;
+    move_uploaded_file($_FILES['picture']['tmp_name'], __DIR__ . "/../../public/assets/".$folder."/" . $picName);
     return $picName;
   }
   /**

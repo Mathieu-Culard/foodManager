@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 header('Access-Control-Allow-Origin: *');
-header('Content-Type: application/json');
+// header('Content-Type: application/json');
 
 // $ret = [
 //     'result' => 'OK',
@@ -27,10 +27,17 @@ header('Content-Type: application/json');
 
 require_once '../vendor/autoload.php';
 
-use App\Controllers\MainController;
+use App\Controllers\Admin\AdminIngredientController;
+use App\Controllers\Admin\AdminUserController;
+use App\Controllers\Admin\AdminUnityController;
 use App\Controllers\UserController;
 use App\Controllers\RecipesController;
 use App\Controllers\IngredientsController;
+use App\Controllers\Admin\AdminCategoryController;
+
+session_start();
+
+
 /* ------------
 --- ROUTAGE ---
 -------------*/
@@ -49,20 +56,157 @@ else {
     // On donne une valeur par défaut à $_SERVER['BASE_URI'] car c'est utilisé dans le CoreController
     $_SERVER['BASE_URI'] = '';
 }
+//=============ADMIN============//
+$router->map(
+    'GET',
+    '/categories/[i:id]?/[a:order]?',
+    [
+        'method' => 'list',
+        'controller' => AdminCategoryController::class
+    ],
+    'admin-categories-list'
+);
 
-// $router->map(
-//     'GET',
-//     '/',
-//     [
-//         'method' => 'home',
-//         'controller' => MainController::class
-//     ],
-//     'main-home'
-// );
+
+
+$router->map(
+    'POST',
+    '/categories/[i:id]?',
+    [
+        'method' => 'createOrUpdate',
+        'controller' => AdminCategoryController::class
+    ],
+    'admin-categories-add-update'
+);
+
+$router->map(
+    'GET',
+    '/categories/delete/[i:id]',
+    [
+        'method' => 'delete',
+        'controller' => AdminCategoryController::class
+    ],
+    'admin-categories-delete'
+);
+
+$router->map(
+    'GET',
+    '/units/[i:id]?/[a:order]?',
+    [
+        'method' => 'list',
+        'controller' => AdminUnityController::class
+    ],
+    'admin-units-list'
+);
+
+$router->map(
+    'POST',
+    '/units/[i:id]?',
+    [
+        'method' => 'createOrUpdate',
+        'controller' => AdminUnityController::class
+    ],
+    'admin-units-add-update'
+);
+
+$router->map(
+    'GET',
+    '/units/delete/[i:id]',
+    [
+        'method' => 'delete',
+        'controller' => AdminUnityController::class
+    ],
+    'admin-units-delete'
+);
+
+
+
+
+$router->map(
+    'GET',
+    '/ingredients/[i:id]?/[a:order]?',
+    [
+        'method' => 'list',
+        'controller' => AdminIngredientController::class
+    ],
+    'admin-ingredients-list'
+);
+
+$router->map(
+    'POST',
+    '/ingredients/[i:id]?',
+    [
+        'method' => 'createOrUpdate',
+        'controller' => AdminIngredientController::class
+    ],
+    'admin-ingredients-add-update'
+);
+
+$router->map(
+    'GET',
+    '/ingredients/delete/[i:id]',
+    [
+        'method' => 'delete',
+        'controller' => AdminIngredientController::class
+    ],
+    'admin-ingredients-delete'
+);
+
+$router->map(
+    'GET',
+    '/users',
+    [
+        'method' => 'list',
+        'controller' => AdminUserController::class
+    ],
+    'admin-user-list'
+);
+
+$router->map(
+    'GET',
+    '/users/[i:id]',
+    [
+        'method' => 'updateRole',
+        'controller' => AdminUserController::class
+    ],
+    'admin-user-update'
+);
+
+$router->map(
+    'GET',
+    '/login',
+    [
+        'method' => 'login',
+        'controller' => AdminUserController::class
+    ],
+    'admin-user-login'
+);
+
+$router->map(
+    'POST',
+    '/login',
+    [
+        'method' => 'authenticate',
+        'controller' => AdminUserController::class
+    ],
+    'admin-user-authenticate'
+);
+
+$router->map(
+    'GET',
+    '/logout',
+    [
+        'method' => 'logout',
+        'controller' => AdminUserController::class
+    ],
+    'admin-user-logout'
+);
+
+
 //=============CONNECTION============//
 $router->map(
     'POST',
-    '/register',
+    '/api/register',
     [
         'method' => 'register',
         'controller' => UserController::class,
@@ -72,7 +216,7 @@ $router->map(
 
 $router->map(
     'POST',
-    '/login',
+    '/api/login',
     [
         'method' => 'login',
         'controller' => UserController::class,
@@ -83,7 +227,7 @@ $router->map(
 //=============RECIPES============//
 $router->map(
     'GET',
-    '/recipes',
+    '/api/recipes',
     [
         'method' => 'list',
         'controller' => RecipesController::class,
@@ -93,7 +237,7 @@ $router->map(
 
 $router->map(
     'GET',
-    '/recipe/[i:id]',
+    '/api/recipe/[i:id]',
     [
         'method' => 'getRecipe',
         'controller' => RecipesController::class,
@@ -103,17 +247,17 @@ $router->map(
 
 $router->map(
     'GET',
-    '/recipe/my-recipes',
+    '/api/recipe/my-recipes',
     [
-        'method'=>'getMyRecipes',
-        'controller'=>RecipesController::class,
+        'method' => 'getMyRecipes',
+        'controller' => RecipesController::class,
     ],
     'get-my-recipes'
 );
 
 $router->map(
     'POST',
-    '/recipe/add',
+    '/api/recipe/add',
     [
         'method' => 'createRecipe',
         'controller' => RecipesController::class,
@@ -123,22 +267,62 @@ $router->map(
 
 $router->map(
     'POST',
-    '/recipe/edit/[i:id]',
+    '/api/recipe/edit/[i:id]',
     [
-        'method'=>'editRecipe',
-        'controller'=>RecipesController::class,
+        'method' => 'editRecipe',
+        'controller' => RecipesController::class,
     ],
     'edit-recipe',
 );
 
 $router->map(
     'DELETE',
-    '/recipe/delete/[i:id]',
+    '/api/recipe/delete/[i:id]',
     [
-        'method'=>'deleteRecipe',
-        'controller'=>RecipesController::class,
+        'method' => 'deleteRecipe',
+        'controller' => RecipesController::class,
     ],
     'delete-recipe',
+);
+
+$router->map(
+    'POST',
+    '/api/recipe/buy/[i:id]',
+    [
+        'method' => 'buyRecipe',
+        'controller' => RecipesController::class,
+    ],
+    'buy-recipe',
+);
+
+$router->map(
+    'POST',
+    '/api/recipe/buyless/[i:id]',
+    [
+        'method' => 'buyLessRecipe',
+        'controller' => RecipesController::class,
+    ],
+    'buy-less-recipe',
+);
+
+$router->map(
+    'DELETE',
+    '/api/recipe/buy/delete/[i:id]',
+    [
+        'method' => 'deleteRecipeToBuy',
+        'controller' => RecipesController::class,
+    ],
+    'buy-recipe-delete',
+);
+
+$router->map(
+    'POST',
+    '/api/recipe/cook/[i:id]',
+    [
+        'method' => 'cookRecipe',
+        'controller' => RecipesController::class,
+    ],
+    'cook-recipe',
 );
 // $router->map(
 //     'GET',
@@ -163,7 +347,7 @@ $router->map(
 //=============INGREDIENTS============//
 $router->map(
     'GET',
-    '/ingredients',
+    '/api/ingredients',
     [
         'method' => 'list',
         'controller' => IngredientsController::class,
@@ -173,7 +357,7 @@ $router->map(
 
 $router->map(
     'GET',
-    '/stock/list',
+    '/api/stock/list',
     [
         'method' => 'listUserIngredients',
         'controller' => IngredientsController::class,
@@ -183,7 +367,7 @@ $router->map(
 
 $router->map(
     'POST',
-    '/stock/add',
+    '/api/stock/add',
     [
         'method' => 'createStockIngredient',
         'controller' => IngredientsController::class,
@@ -193,7 +377,7 @@ $router->map(
 
 $router->map(
     'POST',
-    '/stock/edit/[i:id]',
+    '/api/stock/edit/[i:id]',
     [
         'method' => 'updateStock',
         'controller' => IngredientsController::class,
@@ -203,7 +387,7 @@ $router->map(
 
 $router->map(
     'DELETE',
-    '/stock/delete/[i:id]',
+    '/api/stock/delete/[i:id]',
     [
         'method' => 'deleteFromStock',
         'controller' => IngredientsController::class,
@@ -213,10 +397,10 @@ $router->map(
 
 $router->map(
     'POST',
-    '/shop/validate',
+    '/api/shop/validate',
     [
-        'method'=>'validateShoppingList',
-        'controller'=>IngredientsController::class,
+        'method' => 'validateShoppingList',
+        'controller' => IngredientsController::class,
     ],
     'validate-shopping-list'
 );
@@ -240,8 +424,14 @@ if ($match) {
     $controllerToUse = $match['target']['controller'];
     $methodToUse =  $match['target']['method'];
     $urlParams = $match['params'];
-    $controller = new $controllerToUse();
-    $controller->$methodToUse($urlParams);
+    $name = explode("-", $match['name']);
+    if ($name[0] == "admin") {
+        $controller = new $controllerToUse($router, $match['name']);
+        $controller->$methodToUse($urlParams);
+    } else {
+        $controller = new $controllerToUse();
+        $controller->$methodToUse($urlParams);
+    }
 } else {
     http_response_code(404);
     exit;

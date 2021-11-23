@@ -13,6 +13,9 @@ use App\Utils\Database;
 use JsonSerializable;
 use PDO;
 use PDOException;
+use App\Models\Category;
+use App\Models\Unity;
+
 
 class Ingredient extends CoreModel  implements JsonSerializable
 {
@@ -37,16 +40,119 @@ class Ingredient extends CoreModel  implements JsonSerializable
    */
   private $unity_id;
 
-  /**
-   * return all possible ingredients sorted by category
-   */
+  public static function find($id)
+  {
+    $pdo = Database::getPDO();
+    $sql = "SELECT * FROM ingredients WHERE id = :id";
+    $statement = $pdo->prepare($sql);
+    $statement->bindValue(":id", $id, PDO::PARAM_INT);
+    $statement->execute();
+    $ingredient = $statement->fetchObject(Ingredient::class);
+    return $ingredient;
+  }
 
   public static function findAll()
   {
+    $pdo = Database::getPDO();
+    $sql = "SELECT * FROM ingredients";
+    $statement = $pdo->query($sql);
+    $ingredients = $statement->fetchAll(PDO::FETCH_CLASS, static::class);
+    return $ingredients;
+  }
+
+  public function findCategory()
+  {
+    $id = $this->category_id;
+    $category = Category::find($id);
+    if (!$category) {
+      return new Category();
+    }
+    return $category;
+  }
+
+  public function findUnity()
+  {
+    $id = $this->unity_id;
+    $unity = Unity::find($id);
+    if (!$unity) {
+      return new Unity();
+    }
+    return $unity;
+  }
+
+  public function update()
+  {
+    $pdo = Database::getPDO();
+    $sql = "UPDATE ingredients
+          SET
+            name = :name,
+            image = :image,
+            min_buy = :min_buy,
+            category_id = :category_id,
+            unity_id = :unity_id
+          WHERE id=:id
+      ";
+
+    $statement = $pdo->prepare($sql);
+    $statement->bindValue(':id', $this->id, PDO::PARAM_INT);
+    $statement->bindValue(':name', $this->name, PDO::PARAM_STR);
+    $statement->bindValue(':image', $this->image, PDO::PARAM_STR);
+    $statement->bindValue(':min_buy',  $this->min_buy == 0 || $this->min_buy == 1 ? null :  $this->min_buy, PDO::PARAM_INT);
+    $statement->bindValue(':category_id', $this->category_id, PDO::PARAM_INT);
+    $statement->bindValue(':unity_id',  $this->unity_id == -1 ? null : $this->unity_id, PDO::PARAM_INT);
+    $statement->execute();
+
+    return ($statement->rowCount() > 0);
+  }
+
+  public function insert()
+  {
+    $pdo = Database::getPDO();
+    $sql = "INSERT INTO ingredients (
+      name,
+      image,
+      min_buy,
+      category_id,
+      unity_id
+      ) 
+      VALUES 
+      (
+      :name,
+      :image,
+      :min_buy,
+      :category_id,
+      :unity_id
+      )
+    ";
+    $statement = $pdo->prepare($sql);
+    $statement->bindValue(':name', $this->name, PDO::PARAM_STR);
+    $statement->bindValue(':image', $this->image, PDO::PARAM_STR);
+    $statement->bindValue(':min_buy', $this->min_buy == 0 || $this->min_buy == 1 ? null :  $this->min_buy, PDO::PARAM_INT);
+    $statement->bindValue(':category_id', $this->category_id, PDO::PARAM_INT);
+    $statement->bindValue(':unity_id', $this->unity_id == -1 ? null : $this->unity_id, PDO::PARAM_INT);
+    $statement->execute();
+    return ($statement->rowCount() > 0);
+  }
+
+
+  public function delete()
+  {
+    $pdo = Database::getPDO();
+    $sql = "DELETE FROM ingredients WHERE id = :id";
+    $statement = $pdo->prepare($sql);
+    $statement->bindValue(':id', $this->id, PDO::PARAM_INT);
+    $statement->execute();
+    return $statement->rowCount() > 0;
+  }
+  /**
+   * return all possible ingredients sorted by category
+   */
+  public static function findAllByCategories()
+  {
     $categories = self::getCategories();
     $ingredients = [];
+    $pdo = Database::getPDO();
     foreach ($categories as $category) {
-      $pdo = Database::getPDO();
       $sql = "SELECT i.id, i.name,i.image,i.min_buy as minBuy, u.unity FROM ingredients i
       LEFT JOIN unity u ON u.id = i.unity_id
       WHERE i.category_id =" . $category['id'];
@@ -100,6 +206,155 @@ class Ingredient extends CoreModel  implements JsonSerializable
       array_push($ingredients, ['name' => $category['name'], 'ingredients' => $categoryIngredients]);
     }
     return $ingredients;
+  }
+
+  /**
+   * Combine ingredients from user stock and shopping list 
+   */
+  public static function getUserIngredients($userId)
+  {
+    $stock = self::getUserStock($userId);
+    $shoppingList = self::getUserShoppingList($userId);
+    $userStock = [];
+    foreach ($stock as $stockIngredient) {
+      $found = false;
+      for ($i = 0; $i < count($shoppingList); $i++) {
+        if ($stockIngredient['ingredient_id'] === $shoppingList[$i]['ingredient_id']) {
+          $found = true;
+          $userStock[] = [
+            'ingredient_id' => $stockIngredient['ingredient_id'],
+            'quantity' => $stockIngredient['quantity'] + $shoppingList[$i]['quantity']
+          ];
+          $shoppingList[$i]['ingredient_id'] = -1;
+        }
+      }
+      if (!$found) {
+        $userStock[] = [
+          'ingredient_id' => $stockIngredient['ingredient_id'],
+          'quantity' => $stockIngredient['quantity'],
+        ];
+      }
+    }
+    foreach ($shoppingList as $shopIngredient) {
+      if ($shopIngredient['ingredient_id'] != -1) {
+        $userStock[] = [
+          'ingredient_id' => $shopIngredient['ingredient_id'],
+          'quantity' => $shopIngredient['quantity'],
+        ];
+      }
+    }
+    return $userStock;
+  }
+
+  /**
+   * compare the ingredients that the user owns in his stock and in his shopping list to the ingredients needed
+   * by the recipes he wants to add the right amount of ingredients in his shopping list
+   */
+  public static function getIngredientsToBuy($wantedIngredients, $userStock)
+  {
+    $result = [];
+    foreach ($wantedIngredients as $recipe) { //for each desired recipe
+      $ingredientsToBuy = [];
+      // echo json_encode($recipe);
+      foreach ($recipe['ingredients'] as $ingredient) { // for each ingredient needed by the recipe
+        $found = false;
+        // $ingredient = get_object_vars($ingredient);
+        foreach ($userStock as $userIngredient) { // for each ingredients that the user owns in his stock and shopping list
+          if ($ingredient['id'] == $userIngredient['ingredient_id']) { //add the desired ingredient only if the user doesn't already owns it in sufficient quantity
+            $found = true;
+            if ($ingredient['quantity'] > $userIngredient['quantity']) { // if the recipe require more than what the user owns
+              // if ($ingredient['quantity'] - $userIngredient['quantity'])
+              if(!$ingredient['min_buy']){
+                $ingredient['min_buy']=1;
+              }
+              $ingredient['quantity'] = $ingredient['min_buy'] * ceil(($ingredient['quantity'] - $userIngredient['quantity']) / $ingredient['min_buy']);
+              $ingredientsToBuy[] = $ingredient;
+            }
+          }
+        }
+        if (!$found) {
+          $ingredientsToBuy[] = $ingredient;
+        }
+      }
+      $result[] = [
+        'id' => $recipe['id'],
+        'name' => $recipe['name'],
+        'quantity' => $recipe['quantity'],
+        'ingredients' => $ingredientsToBuy,
+      ];
+    }
+    return $result;
+  }
+
+  public static function reduceIngredients($ingredients, $result)
+  {
+    $item = $ingredients[0];
+    $reduced = [];
+    array_splice($ingredients, 0, 1);
+    foreach ($item['ingredients'] as $ingredient) {  // ingredients 1er elem
+      for ($i = 0; $i < count($ingredients); $i++) { //recette
+        for ($j = 0; $j < count($ingredients[$i]['ingredients']); $j++) { //ingredients recette
+          if ($ingredient['id'] == $ingredients[$i]['ingredients'][$j]['id']) {
+            $ingredient['quantity'] += $ingredients[$i]['ingredients'][$j]['quantity'];
+            array_splice($ingredients[$i]['ingredients'], $j, 1);
+          }
+        }
+      }
+      $reduced[] = $ingredient;
+    }
+    $result[] = [
+      'id' => $item['id'],
+      'name' => $item['name'],
+      'quantity' => $item['quantity'],
+      'ingredients' => $reduced,
+    ];
+    if (count($ingredients) == 0) {
+      return $result;
+    } else {
+      return self::reduceIngredients($ingredients, $result);
+    }
+  }
+
+  public static function getRightAmountOfIngredients($ingredients, $multiplier)
+  {
+    $arr = [];
+    foreach ($ingredients as $ingredient) {
+      $ingredientArray = get_object_vars($ingredient);
+      if (!empty($ingredientArray['min_buy'])) {
+        $ingredientArray['quantity'] = $ingredientArray['min_buy'] * ceil(($ingredientArray['quantity'] * $multiplier) / $ingredientArray['min_buy']);
+      } else {
+        $ingredientArray['quantity'] *= $multiplier;
+      }
+      $arr[] = $ingredientArray;
+    }
+    // echo json_encode($test);
+    return $arr;
+  }
+
+  public static function getUserStock($userId)
+  {
+    $pdo = Database::getPDO();
+    $sql = "SELECT ingredient_id,quantity
+            FROM users_ingredients 
+            WHERE user_id = :user_id
+            AND needed=0";
+    $statement = $pdo->prepare($sql);
+    $statement->bindValue(':user_id', $userId);
+    $statement->execute();
+    return $statement->fetchAll(PDO::FETCH_ASSOC);
+  }
+
+  public static function getUserShoppingList($userId)
+  {
+    $pdo = Database::getPDO();
+    $sql = "SELECT ingredient_id,quantity
+            FROM users_ingredients 
+            WHERE user_id = :user_id
+            AND needed=1";
+    $statement = $pdo->prepare($sql);
+    $statement->bindValue(':user_id', $userId);
+    $statement->execute();
+    return $statement->fetchAll(PDO::FETCH_ASSOC);
   }
 
   /**
@@ -197,8 +452,6 @@ class Ingredient extends CoreModel  implements JsonSerializable
       } catch (PDOException $e) {
         return [
           'error' => $e->errorInfo,
-          'lel' => 'lel',
-          'model' => 'ingredient'
         ];
       }
     }
@@ -244,7 +497,11 @@ class Ingredient extends CoreModel  implements JsonSerializable
    */
   public static function updateStockIngredient($id, $userId, $quantity, $needed)
   {
-    if ($quantity != 0) {
+    // echo $id . "/";
+    // echo $userId. "/";
+    // echo $quantity. "/";
+    // echo $needed. "/";
+    if ($quantity > 0) {
       try {
         $pdo = Database::getPDO();
         $sql = "
@@ -263,8 +520,10 @@ class Ingredient extends CoreModel  implements JsonSerializable
       } catch (PDOException $e) {
         return $e->errorInfo;
       }
+      // return 'manh';
     } else {
       self::deleteStockIngredient($id, $userId, $needed);
+      // return 'bler';
     }
   }
 
@@ -275,11 +534,10 @@ class Ingredient extends CoreModel  implements JsonSerializable
   {
     try {
       $pdo = Database::getPDO();
-      $sql = "
-    DELETE FROM users_ingredients
-    WHERE ingredient_id= :id
-    AND user_id= :userId
-    AND needed = :needed
+      $sql = "DELETE FROM users_ingredients
+              WHERE ingredient_id= :id
+              AND user_id= :userId
+              AND needed = :needed
     ";
       $statement = $pdo->prepare($sql);
       $statement->bindValue(':id', $id, PDO::PARAM_INT);
@@ -292,23 +550,55 @@ class Ingredient extends CoreModel  implements JsonSerializable
   }
 
   /**
+   * Remove recipe's ingredients that has been cook from user stock
+   */
+  public static function removeRecipeFromStock($userId, $recipeId)
+  {
+    $ingredients = Ingredient::findRecipeIngredients($recipeId);
+    $userStock = Ingredient::findUserIngredients($userId);
+    foreach ($ingredients as $ingredient) {
+      foreach ($userStock as $cat) {
+        foreach ($cat['ingredients'] as $stockIngredient) {
+          if ($stockIngredient->getId() == $ingredient->getId()) {
+            $quantity = get_object_vars($stockIngredient)['quantity'] - get_object_vars($ingredient)['quantity'];
+            self::updateStockIngredient($stockIngredient->getId(), $userId, $quantity, "0");
+          }
+        }
+      }
+    }
+  }
+
+
+  /**
    *  retrieve all the ingredients linked to a particular recipe
    */
   public static function findRecipeIngredients($recipeId)
   {
     $pdo = Database::getPDO();
-    $sql = "SELECT i.id, i.name, i.image, ri.quantity, u.unity
+    $sql = "SELECT i.id, i.name, i.image, ri.quantity, u.unity, i.min_buy
           FROM ingredients i 
-          INNER JOIN recipe_ingredients ri 
+          LEFT JOIN recipe_ingredients ri 
           ON i.id=ri.ingredient_id 
-          INNER JOIN unity u
+          LEFT JOIN unity u
           ON u.id=i.unity_id
           WHERE ri.recipe_id = :id";
     $preparedQuery = $pdo->prepare($sql);
-    $preparedQuery->bindValue(':id', $recipeId);
+    $preparedQuery->bindValue(':id', $recipeId, PDO::PARAM_INT);
     $preparedQuery->execute();
     $ingredients = $preparedQuery->fetchAll(PDO::FETCH_CLASS, static::class);
     return $ingredients;
+  }
+
+  public function hasEnought($userStock)
+  {
+    $enought = false;
+    $ingredient = get_object_vars($this);
+    foreach ($userStock as $stockElem) {
+      if ($stockElem['ingredient_id'] == $ingredient['id'] && $stockElem['quantity'] >= $ingredient['quantity']) {
+        $enought = true;
+      }
+    }
+    return $enought;
   }
 
   /**

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\User;
 use App\Models\Ingredient;
+use App\Models\Recipe;
 use Symfony\Component\VarDumper\Caster\ArgsStub;
 
 class IngredientsController
@@ -13,7 +14,7 @@ class IngredientsController
    */
   public function list()
   {
-    $ingredients = Ingredient::findAll();
+    $ingredients = Ingredient::findAllByCategories();
     echo json_encode($ingredients);
   }
 
@@ -88,7 +89,7 @@ class IngredientsController
       echo json_encode($response);
     } else {
       http_response_code(401);
-      echo json_encode('vous devez vous reconnecter');
+      echo json_encode($granted['error']);
     }
   }
 
@@ -102,7 +103,15 @@ class IngredientsController
       $data = json_decode(file_get_contents("php://input"));
       $identifier = filter_var($_GET['identifier'], FILTER_SANITIZE_STRING);
       $ingredients = Ingredient::findUserIngredients($granted['userId'], $identifier);
-      echo json_encode($ingredients);
+      if ($identifier == 'shop') {
+        $result=Recipe::getWantedRecipes($granted['userId']);
+        echo json_encode([
+          'recipes'=>$result,
+          'ingredients'=>$ingredients
+        ]);
+      }else{
+        echo json_encode($ingredients);
+      }
     } else {
       http_response_code(401);
       echo json_encode('vous devez vous reconnecter');
@@ -116,10 +125,28 @@ class IngredientsController
   {
     $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
     if ($granted['message'] === "success") {
+      $data = json_decode(file_get_contents("php://input"));
+      $recipes = $data->recipesShop;
+      $ingredients=[];
+      $recipesIds=[];
+      $args = [
+        'id' => FILTER_VALIDATE_INT,
+        'quantity' => FILTER_VALIDATE_INT,
+      ];
+      foreach($recipes as $recipe){
+        foreach($recipe->ingredients as $ingredient){
+          $ingredients[]=filter_var_array(get_object_vars($ingredient),$args);
+        }
+        $recipesIds[]=filter_var($recipe->id,FILTER_VALIDATE_INT);
+      }
       $shoppingList = Ingredient::getShoppingList($granted['userId']);
       Ingredient::addToStock($shoppingList, $granted['userId'], 0);
+      Ingredient::addToStock($ingredients,$granted['userId'], 0);
       foreach ($shoppingList as $ingredient) {
-        Ingredient::deleteStockIngredient($ingredient['id'],$granted['userId'],1);
+        Ingredient::deleteStockIngredient($ingredient['id'], $granted['userId'], 1);
+      }
+      foreach($recipesIds as $id){
+        Recipe::deleteWantedRecipe($id,$granted['userId']);
       }
       // echo json_encode($shoppingList);
     } else {

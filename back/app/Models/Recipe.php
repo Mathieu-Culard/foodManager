@@ -8,6 +8,7 @@ use App\Models\Step;
 use JsonSerializable;
 use PDO;
 use PDOException;
+use Symfony\Component\VarDumper\Cloner\Data;
 
 class Recipe extends CoreModel  implements JsonSerializable
 {
@@ -35,6 +36,8 @@ class Recipe extends CoreModel  implements JsonSerializable
    * @var int
    */
   private $user_id;
+
+
 
 
   /**
@@ -73,9 +76,31 @@ class Recipe extends CoreModel  implements JsonSerializable
     $preparedQuery->bindValue(':user_id', $id);
     $preparedQuery->execute();
     $recipes = $preparedQuery->fetchAll(PDO::FETCH_CLASS, static::class);
-    return $recipes;
+    $result = [];
+    $userStock = Ingredient::getUserStock($id);
+    foreach ($recipes as $recipe) {
+      $result[] = self::checkDoable($recipe, $userStock);
+    }
+    return $result;
   }
 
+  public static function checkDoable($recipe, $userStock)
+  {
+
+    // foreach ($recipes as $recipe) {
+    $isDoable = true;
+    $ingredients = Ingredient::findRecipeIngredients($recipe->getId());
+    foreach ($ingredients as $ingredient) {
+      if (!$ingredient->hasEnought($userStock)) {
+        $isDoable = false;
+      }
+    }
+    $recipe = get_object_vars($recipe);
+    $recipe['isDoable'] = $isDoable;
+    // $newRecipes[] = $recipe;
+    // }
+    return $recipe;
+  }
   // public static function findRecipeSteps($id)
   // {
   //   $pdo = Database::getPDO();
@@ -87,6 +112,127 @@ class Recipe extends CoreModel  implements JsonSerializable
   //   return $steps;
   // }
 
+  public static function checkExist($id, $userId)
+  {
+    $pdo = Database::getPDO();
+    $sql = "SELECT *
+            FROM wanted_recipes
+            WHERE user_id = :user_id
+            AND recipe_id=:recipe_id";
+    $statement = $pdo->prepare($sql);
+    $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
+    $statement->bindValue(':recipe_id', $id, PDO::PARAM_INT);
+    $statement->execute();
+    return $statement->fetch(PDO::FETCH_ASSOC);
+  }
+
+  public static function addWantedRecipe($id, $userId)
+  {
+    $pdo = Database::getPDO();
+    $wantedRecipe = self::checkExist($id, $userId);
+    if (!$wantedRecipe) {
+      $quantity = 1;
+      $sql = "INSERT INTO wanted_recipes (
+        user_id,
+        recipe_id,
+        quantity
+        )
+        VALUES (
+        :user_id,
+        :recipe_id,
+        :quantity
+        )";
+    } else {
+      $quantity = $wantedRecipe['quantity'] + 1;
+      $sql = "UPDATE wanted_recipes
+      SET quantity= :quantity
+      WHERE recipe_id= :recipe_id
+      AND user_id= :user_id";
+    }
+    $statement = $pdo->prepare($sql);
+    $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
+    $statement->bindValue(':recipe_id', $id, PDO::PARAM_INT);
+    $statement->bindValue(':quantity', $quantity, PDO::PARAM_INT);
+    $statement->execute();
+  }
+
+  public static function removeWantedRecipe($recipe, $userId)
+  {
+    $quantity = $recipe['quantity'] - 1;
+    if ($quantity == 0) {
+      self::deleteWantedRecipe($recipe['recipe_id'], $userId);
+    } else {
+      echo $recipe['id'];
+      $pdo = Database::getPDO();
+      $sql = "UPDATE wanted_recipes
+      SET quantity= :quantity
+      WHERE recipe_id= :recipe_id
+      AND user_id= :user_id";
+      $statement = $pdo->prepare($sql);
+      $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
+      $statement->bindValue(':recipe_id', $recipe['recipe_id'], PDO::PARAM_INT);
+      $statement->bindValue(':quantity', $quantity, PDO::PARAM_INT);
+      $statement->execute();
+    }
+  }
+
+  public static function deleteWantedRecipe($id, $userId)
+  {
+    $pdo = Database::getPDO();
+    $sql = "DELETE FROM wanted_recipes
+            WHERE recipe_id= :recipe_id
+            AND user_id= :user_id
+            ";
+    $statement = $pdo->prepare($sql);
+    $statement->bindValue(':recipe_id', $id, PDO::PARAM_INT);
+    $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
+    $statement->execute();
+  }
+
+  public static function deleteAllWantedRecipe($id){
+    $pdo = Database::getPDO();
+    $sql = "DELETE FROM wanted_recipes
+            WHERE recipe_id= :recipe_id
+            ";
+    $statement = $pdo->prepare($sql);
+    $statement->bindValue(':recipe_id', $id, PDO::PARAM_INT);
+    $statement->execute();
+  }
+
+  public static function getWantedRecipes($userId)
+  {
+    $pdo = Database::getPDO();  //fetch wanted recipes
+    $sql = "SELECT * 
+            FROM wanted_recipes
+            WHERE user_id = :user_id";
+    $statement = $pdo->prepare($sql);
+    $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
+    $statement->execute();
+    $wantedRecipe = $statement->fetchAll(PDO::FETCH_ASSOC);
+    // Recipe::getWantedRecipes($granted['userId']);
+    $userStock = Ingredient::getUserIngredients($userId); // fetch user stock
+    // echo json_encode($userStock);
+    $wantedRecipesIngredients = [];
+    foreach ($wantedRecipe as $recipe) {  //add the needed ingredients to the wanted recipes
+      $ingredients = Ingredient::findRecipeIngredients($recipe['recipe_id']);
+      // $processedIngredients=
+      $wantedRecipesIngredients[] = [ //create data to return 
+        'id' => $recipe['recipe_id'],
+        'name' => Recipe::find($recipe['recipe_id'])->getName(),
+        'quantity' => $recipe['quantity'],
+        'ingredients' =>  Ingredient::getRightAmountOfIngredients($ingredients, $recipe['quantity']),
+      ];
+    }
+    // echo json_encode(empty($wantedRecipesIngredients));
+    if (!empty($wantedRecipesIngredients)) {
+      $test = Ingredient::reduceIngredients($wantedRecipesIngredients, []);
+      return Ingredient::getIngredientsToBuy($test, $userStock);
+    }
+    return [];
+    // self::getRightAmountOfIngredients($ingredients, $recipe['quantity']
+  }
+
+
   /**
    * insert à new recipe
    */
@@ -95,10 +241,6 @@ class Recipe extends CoreModel  implements JsonSerializable
 
     $pdo = Database::getPDO();
     $error = [];
-    // $shared = $data['shared'];
-    // $name = $data['name'];
-    // $ingredients = json_decode($data['ingredients'], true);
-    // $steps = json_decode($data['steps'], true);
     $sql = "INSERT INTO recipes (
       name,
       image,
@@ -128,13 +270,6 @@ class Recipe extends CoreModel  implements JsonSerializable
         Ingredient::addRecipesIngredients($ingredients, $recipeId);
         Step::addRecipeSteps($steps, $recipeId);
         return $recipeId;
-        // if (!empty($error)) {
-        //   return empty([]);
-        //   // return $error;
-        // } else {
-        //   return 'shhheeeeeeeeeehhhshhheeeeeeeeeehhh';
-        //   // return $recipeId;
-        // }
       } else {
         return 'ckc';
       }
@@ -145,6 +280,7 @@ class Recipe extends CoreModel  implements JsonSerializable
       ];
     }
   }
+
   public function delete()
   {
     $pdo = Database::getPDO();
@@ -156,6 +292,7 @@ class Recipe extends CoreModel  implements JsonSerializable
     $statement = $pdo->prepare($sql);
     $statement->bindValue(':id', $this->id, PDO::PARAM_INT);
     $statement->execute();
+    self::deleteAllWantedRecipe($this->id);
     // On retourne VRAI, si au moins une ligne supprimée
     return ($statement->rowCount() > 0);
   }

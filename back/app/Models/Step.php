@@ -28,32 +28,34 @@ class Step extends CoreModel implements JsonSerializable
     return $steps;
   }
 
-  
+
   /**
    * add new steps to a recipe
    */
   public static function addRecipeSteps($steps, $recipeId)
   {
     $pdo = Database::getPDO();
+    $sql = "INSERT INTO steps (
+      text,
+      recipe_id
+      ) VALUES (
+        :text,
+        :recipe_id
+        )
+      ";
     foreach ($steps as $step) {
-      $sql = "INSERT INTO steps (
-        text,
-        recipe_id
-        ) VALUES (
-          :text,
-          :recipe_id
-          )
-        ";
-      try {
-        $statement = $pdo->prepare($sql);
-        $statement->bindValue(':text', $step);
-        $statement->bindValue(':recipe_id', $recipeId);
-        $statement->execute();
-      } catch (PDOException $e) {
-        return [
-          'error' => $e->errorInfo,
-          'model' => 'step'
-        ];
+      if (trim($step) != "") {
+        try {
+          $statement = $pdo->prepare($sql);
+          $statement->bindValue(':text', $step);
+          $statement->bindValue(':recipe_id', $recipeId);
+          $statement->execute();
+        } catch (PDOException $e) {
+          return [
+            'error' => $e->errorInfo,
+            'model' => 'step'
+          ];
+        }
       }
     }
   }

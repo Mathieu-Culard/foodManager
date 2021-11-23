@@ -66,13 +66,35 @@ class User extends CoreModel implements JsonSerializable
             ':username' => $username,
         ]);
         $user = $preparedQuery->fetchObject(static::class);
-        if ($user) {
-            return $user;
-        } else {
-            return false;
-        }
+        return $user;
     }
 
+    public static function findbyId($id)
+    {
+        $pdo = Database::getPDO();
+        $sql = "SELECT * FROM `users` WHERE id = :id ";
+        $statement = $pdo->prepare($sql);
+        $statement->bindValue(':id', $id, PDO::PARAM_INT);
+        $statement->execute();
+        $user = $statement->fetchObject(static::class);
+        return $user;
+    }
+
+    public function changeRole()
+    {
+        $pdo = Database::getPDO();
+        $sql = "UPDATE users
+                SET 
+                role= :role
+                WHERE id = :id
+        ";
+        $statement = $pdo->prepare($sql);
+        $statement->bindValue(':role', $this->role, PDO::PARAM_STR);
+        $statement->bindValue(':id', $this->id, PDO::PARAM_INT);
+        $statement->execute();
+
+        return $statement->rowCount() > 0;
+    }
 
     public function insert()
     {
@@ -128,7 +150,8 @@ class User extends CoreModel implements JsonSerializable
                 'role' => $this->getRole(),
                 'avatar' => $this->getAvatar(),
                 'stock' => Ingredient::findUserIngredients($this->getId()),
-                'shop' => Ingredient::findUserIngredients($this->getId(),'shop'),
+                'shop' => Ingredient::findUserIngredients($this->getId(), 'shop'),
+                'recipesShop' => Recipe::getWantedRecipes($this->getId()),
                 'recipes' => Recipe::findUserRecipes($this->getId()),
             ]
         ]);
@@ -139,7 +162,9 @@ class User extends CoreModel implements JsonSerializable
      */
     public function createToken()
     {
-        $secret_key = "TEST";
+        $configData = parse_ini_file(__DIR__ . '/../config.ini');
+
+        // $secret_key = "TEST";
         $issuer_claim = "THE_ISSUER"; // this can be the servername
         $audience_claim = "THE_AUDIENCE";
         $issuedat_claim = time(); // issued at
@@ -158,19 +183,19 @@ class User extends CoreModel implements JsonSerializable
             ]
         ];
 
-        $jwt = JWT::encode($token, $secret_key);
+        $jwt = JWT::encode($token, $configData['JWT_KEY']);
         return $jwt;
     }
 
 
     public static function checkToken($auth)
     {
-        $secret_key = "TEST";
+        $configData = parse_ini_file(__DIR__ . '/../config.ini');
         $arr = explode(" ", $auth);
         $jwt = $arr[1];
         if ($jwt) {
             try {
-                $decoded = JWT::decode($jwt, $secret_key, array('HS256'));
+                $decoded = JWT::decode($jwt, $configData['JWT_KEY'], array('HS256'));
                 return [
                     "message" => "success",
                     "userId" => $decoded->data->id,
