@@ -16,7 +16,7 @@ const ModalPanel = ({
         <div className="modal-wrapper">
           <div className="modal">
             <div className="modal-header">
-              <h4>{modalTitle}</h4>
+
               <button
                 type="button"
                 className="modal-close-button"
@@ -26,6 +26,7 @@ const ModalPanel = ({
               </button>
             </div>
             <div className="modal-body">
+              {/* <h4>{modalTitle}</h4> */}
               {
                   {
                     RegisterForm: <RegisterForm />,

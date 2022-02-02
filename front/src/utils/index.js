@@ -1,11 +1,14 @@
+import ShopPanel from "../components/ShopPanel";
+
 export const updateStock = (stock, id, newValue) => {
   const newStock = stock.map((cat) => {
     const index = cat.ingredients.findIndex((ingredient) => ingredient.id === id);
     if (index > -1) {
-      if (newValue === "0") {
+      if (newValue === '0') {
         console.log('blerbler');
         cat.ingredients.splice(index, 1);
-      } else {
+      }
+      else {
         cat.ingredients[index].quantity = newValue;
       }
     }
@@ -113,16 +116,19 @@ export const getRecipesIngredients = (ingredientsList, addStock, addedIngredient
   return ingredients;
 };
 
-
-
-// export const checkDuplicateInRecipesIngredients = (addStock, addedIngredients) => {
-
-// };
-// const currentItem = ingredientsList[j].ingredients.find((item) => item.id === addedIngredients[i].id);
-// console.log("ménon");
-// console.log(currentItem);
-// if (currentItem) {
-//   console.log("bahoui");
-//   currentItem.quantity += addStock[i].quantity;
-// } else {
-
+export const test = () => {
+  // console.log(window.scrollY);
+  // console.log('---');
+  // console.log(window.outerHeight);
+  // const shopPanel = document.querySelector('.shop-panel');
+  // const stockPanel = document.querySelector('.stock-panel');
+  // // if (window.scrollY > 54) {
+  // //   console.log('yes');
+  // //   shopPanel.style.height = '100%';
+  // //   stockPanel.style.height = '100%';
+  // // } else {
+  // //   const height = 92 + (8 * (window.scrollY / 54));
+  // //   shopPanel.style.height = `${height}%`;
+  // //   stockPanel.style.height = `${height}%`;
+  // // }
+};

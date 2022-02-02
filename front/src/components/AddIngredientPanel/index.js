@@ -2,8 +2,9 @@ import React from 'react';
 import Category from './Category';
 import './addIngredientPanel.scss';
 
-const AddIngredientPanel = ({ ingredients, addToStock, addToRecipe, addedValues, changeValue, modalUse }) => {
-
+const AddIngredientPanel = ({
+  ingredients, addToStock, addToRecipe, addedValues, changeValue, modalUse,
+}) => {
   console.log(modalUse);
   const submit = () => {
     console.log('mer');
@@ -18,7 +19,10 @@ const AddIngredientPanel = ({ ingredients, addToStock, addToRecipe, addedValues,
 
   return (
     <div className="add-ingredient-panel">
-      <div className="add-ingredient-panel__content">
+      {modalUse === 'shop' && <h2 className="add-ingredient-panel__title">Ajouter un element à votre liste de courses</h2>}
+      {modalUse === 'recipe' && <h2 className="add-ingredient-panel__title">Ajouter un element à votre recette</h2>}
+      {modalUse === 'stock' && <h2 className="add-ingredient-panel__title">Ajouter un element à votre stock</h2>}
+      <div className="add-ingredient-panel__content scroll">
         {ingredients.map((category) => (
           <Category
             key={category.name}
@@ -29,7 +33,9 @@ const AddIngredientPanel = ({ ingredients, addToStock, addToRecipe, addedValues,
           />
         ))}
       </div>
-      <button className="add-ingredient-panel__submit" type="button" onClick={submit}>Valider</button>
+      <div className="add-ingredient-panel__submit">
+        <button className="add-ingredient-panel__submit__button" type="button" onClick={submit}>Valider</button>
+      </div>
     </div>
   );
 };

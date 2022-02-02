@@ -2,6 +2,7 @@ import axios from 'axios';
 import {
   SUBMIT_REGISTRATION, clearForm, SUBMIT_CONNECTION, CHECK_TOKEN, logIn, LOG_OUT, logOut,
 } from 'src/actions/connection';
+import { fetchPublicRecipes } from 'src/actions/recipes';
 import { clearAddStock } from 'src/actions/ingredients';
 import { saveUserInfo, clearUserInfo, CLEAR_USER_INFO } from 'src/actions/user';
 import { CLOSE_MODAL, closeModal, openSnackbar } from 'src/actions/utils';
@@ -28,17 +29,15 @@ const ConnectionMiddleware = (store) => (next) => (action) => {
         password,
         passwordConf,
       } = store.getState().connection;
-      axios.post('http://localhost:8000/register', {
+      axios.post('http://localhost:8000/api/register', {
         username,
         email,
         password,
         passwordConf,
-      }).then(() => {
-        console.log('ca marche??');
+      }).then((response) => {
         store.dispatch(closeModal());
-        store.dispatch(openSnackbar('inscription reussie', 'sucess'));
+        store.dispatch(openSnackbar(response.data, 'success'));
       }).catch((error) => {
-        console.log(error.response.data);
         store.dispatch(openSnackbar(error.response.data, 'warning'));
       });
       next(action);
@@ -49,13 +48,14 @@ const ConnectionMiddleware = (store) => (next) => (action) => {
         username,
         password,
       } = store.getState().connection;
-      axios.post('http://localhost:8000/login', {
+      axios.post('http://localhost:8000/api/login', {
         username,
         password,
       }).then((response) => {
         // console.log(response.data.user.stock[1]);
         localStorage.setItem('jwt', response.data.token);
         store.dispatch(closeModal());
+        store.dispatch(fetchPublicRecipes());
         store.dispatch(logIn());
         store.dispatch(saveUserInfo(response.data.user));
         store.dispatch(openSnackbar('connexion effectuée', 'success'));
@@ -66,7 +66,7 @@ const ConnectionMiddleware = (store) => (next) => (action) => {
       break;
     }
     case CHECK_TOKEN: {
-      axios.get('http://localhost:8000/checktoken',
+      axios.get('http://localhost:8000/api/checktoken',
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt')}`,
@@ -86,6 +86,7 @@ const ConnectionMiddleware = (store) => (next) => (action) => {
     }
     case LOG_OUT: {
       store.dispatch(clearUserInfo());
+      store.dispatch(fetchPublicRecipes());
       store.dispatch(openSnackbar('deconnexion effectué', 'success'));
       next(action);
       break;

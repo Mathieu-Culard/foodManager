@@ -16,6 +16,30 @@ export const CLEAR_ADD_RECIPE_FORM = 'CLEAR_ADD_RECIPE_FORM';
 export const SET_INFO_FOR_EDIT = 'SET_INFO_FOR_EDIT';
 export const EDIT_RECIPE = 'EDIT_RECIPE';
 export const DELETE_RECIPE = 'DELETE_RECIPE';
+export const BUY_RECIPE = 'BUY_RECIPE';
+export const BUY_LESS_RECIPE = 'BUY_LESS_RECIPE';
+export const DELETE_RECIPE_TO_BUY = 'DELETE_RECIPE_TO_BUY';
+export const COOK_RECIPE = 'COOK_RECIPE';
+
+export const cookRecipe = (recipeId) => ({
+  type: COOK_RECIPE,
+  recipeId,
+});
+
+export const deleteRecipeToBuy = (recipeId) => ({
+  type: DELETE_RECIPE_TO_BUY,
+  recipeId,
+});
+
+export const buyLessRecipe = (recipeId) => ({
+  type: BUY_LESS_RECIPE,
+  recipeId,
+});
+
+export const buyRecipe = (recipeId) => ({
+  type: BUY_RECIPE,
+  recipeId,
+});
 
 export const deleteRecipe = (id) => ({
   type: DELETE_RECIPE,

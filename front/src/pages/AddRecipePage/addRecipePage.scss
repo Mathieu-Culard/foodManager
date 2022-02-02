@@ -1,4 +1,226 @@
-.add-recipe{
-  width: 90%;
+@import 'src/styles/vars';
+
+.add-recipe {
+  width: 80%;
   margin: auto;
+  color: $darkColor;
+
+  &__form {
+    width: 100%;
+
+    &__header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+
+      &__title {
+        font-size: 2rem;
+      }
+      &__public{
+        width: 20%;
+        display: flex;
+        justify-content: space-around;
+        &__title{
+          font-weight: $bold;
+          font-size: 1rem;
+        }
+      }
+    }
+
+    &__name {
+
+      &__title {
+        font-weight: $bold;
+        margin-bottom: 1rem;
+      }
+
+      &__input {
+        margin-bottom: 1rem;
+        font-family: $raleway;
+        font-size: 1rem;
+        color: $darkColor;
+        border: 1px solid $darkColor;
+        border-radius: 5px;
+        padding: .2rem;
+      }
+    }
+
+    &__container {
+      display: flex;
+      justify-content: space-between;
+      &>div>label {
+        vertical-align: top;
+      }
+
+      &__left {
+        width: 45%;
+      }
+    }
+
+    &__image {
+      width: 40%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+
+      &__title {
+        padding-bottom: 1rem;
+        font-weight: $bold;
+      }
+
+      &__input {
+        display: none;
+      }
+
+      &__preview {
+        display: block;
+        width: 100px;
+        align-self: center;
+        border-radius: 5px;
+      }
+
+      &__button {
+        color: $lightColor;
+        background-color: $mainColor;
+        padding: .5rem 1rem;
+        border-radius: 10px;
+        margin: 1rem 0;
+        font-weight: $bold;
+        text-align: center_;
+      }
+    }
+
+    &__ingredients {
+      &__title {
+        margin-bottom: 1rem;
+        font-weight: $bold;
+      }
+
+      &__container {
+        border-radius: 10px;
+        border: 1px solid $darkColor;
+        height: 20rem;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+
+        &__ingredients {
+          // padding: 2rem;
+          height: 85%;
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: space-around;
+          overflow-y: auto;
+          // scrollbar-width: thin;
+          align-content: flex-start;
+         
+          // &::-webkit-scrollbar-track{
+          //   background-color: f;
+          //   border-radius: 20px;
+          // }
+
+          &>.recipe {
+            width: 47%;
+
+            &>input {
+              min-width: 15%;
+              max-width: 20%;
+            }
+          }
+        }
+
+        &__button {
+          align-self: center;
+          position: absolute;
+          bottom: 0;
+          color: $lightColor;
+          background-color: $mainColor;
+          padding: .5rem 1rem;
+          border-radius: 10px;
+          font-weight: $bold;
+          border: none;
+          margin: .5rem 0;
+          font-size: 1rem;
+        }
+      }
+    }
+
+    &__steps {
+      width: 50%;
+
+      &__container {
+        &__step {
+          position: relative;
+          width: 100%;
+          height: 100px;
+          
+          &__num {
+            font-weight: $bold;
+            padding-bottom:1rem ;
+          }
+          &__text{
+            font-family: $raleway;
+            font-size: 1rem;
+          }
+
+          &__delete {
+            width: 20px;
+            height: 20px;
+            position: absolute;
+            right: .5rem;
+            // top: 1rem;
+            margin-top: .5rem;
+            border:none;
+            background-color: $mainColor;
+            color:$lightColor;
+            font-weight: $bold;
+            font-size: 1rem;
+            border-radius: 5px;
+            line-height: 1rem;
+          }
+
+          &__text {
+            width: 100%;
+            height: 80px;
+            border-radius: 10px;
+            margin-bottom:2rem ;
+            border: 1px solid $darkColor;
+            padding: 0.5rem;
+          }
+        }
+
+        &__add {
+          width: 25px;
+          height: 25px;
+          position: relative;
+          left: 95%;
+          border: 3px solid $mainColor;
+          border-radius: 50%;
+          background-color: $lightColor;
+          color:$mainColor;
+          font-weight: $bold;
+          font-size: 1.2rem;
+          line-height: 1rem;
+          padding: 0;
+        }
+      }
+    }
+
+    &__submit {
+      width: 100%;
+      text-align: center;
+
+      &__button {
+        color: $lightColor;
+        background-color: $mainColor;
+        padding: .5rem 1.5rem;
+        border-radius: 10px;
+        font-weight: $bold;
+        border: none;
+        margin: 2rem 0;
+        font-size: 1rem;
+      }
+    }
+  }
+
 }

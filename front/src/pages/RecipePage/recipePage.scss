@@ -1,114 +1,205 @@
+@import 'src/styles/vars';
+
 .recipe-page {
   width: 90%;
-  margin: auto;
+  margin: 0 auto 4rem auto;
+  color:$darkColor;
+  
 
-  &__head {
-    box-shadow: 0px -3px 9px 1px rgba(16, 16, 16, 0.23);
-    border: 1px solid #ccc;
+  &__image {
+    object-fit: cover;
+    display: block;
+    margin: auto;
+    width: 70%;
+    height: 40rem;
     border-radius: 20px;
-    &__container {
-      position: relative;
-      min-height: 100%;
+  }
 
-      &__image {
-        object-fit: cover;
-        min-width: 100%;
-        max-height: 40vh;
-      }
-
-      &__title {
-        font-size: 34px;
-        font-weight: bold;
-        z-index: 500;
-        position: absolute;
-        bottom: 0;
-        padding: 0 0 1rem 2rem;
-      }
+  &__infos{
+    padding: 3rem 0 ;
+    text-align: center;
+    &__title{
+      font-size: 2rem;
     }
-
-    &__ingredients {
-
-      // border: 1px solid #ccc;
-      // border-radius: 0 0 20px 20px;
-      // width: fit-content;
-      padding: 2rem 0 0 2rem;
-      
-      &__title{
-        font-weight: bold;
-        font-size: 26px;
+    &__owner{
+      margin: auto;
+      width: fit-content;
+      margin-top: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      &__avatar{
+        border-radius: 50%;
+        max-width: 50px;
+        height: 50px;
+        object-fit: cover;
       }
-      &__container {
-        padding: 2rem 0 0 0;
-        display: flex;
-        justify-content: flex-start;
-        flex-wrap: wrap;
+      &__username{
+        padding-left: 1rem;
+        &>span{
+          font-weight: $bold;
+        }
       }
     }
   }
 
-  &__body {
+  &__recipe{
+    margin: auto;
+    width: 70%;
     display: flex;
     justify-content: space-between;
-    margin: 2rem 0 2rem 0;
-    &__steps{
-      padding-left: 2rem;
-      width: 60%;
-     
+
+    &__ingredients{
       &__title{
-        font-weight: bold;
-        font-size: 26px;
-        // margin: 2rem 0 2rem 0;
-      }
-      &__counters{
-        font-size: 20px;
-        font-weight: bold;
-        margin: 2rem 0 1rem 0;
-      }
-      &__text{
-        padding-left: 1rem;
-        font-size: 18px;
+        font-size: 1.5rem;
+        padding-bottom: 1.5rem;
       }
     }
 
-
-
-
-
-    &__owner-card {
-      // margin-right: 15rem;
-      text-align: center;
-      // border: 1px solid black;
-      width: 40%;
-      &__title {
-        font-weight: bold;
-        margin-bottom: 1rem;
+    &__steps{
+      width: 45%;
+      &__title{
+        font-size: 1.5rem;
+        padding-bottom: 2rem;
       }
+      &__text{
+        padding: 1.5rem 0;
+      }
+    }
 
-      &__card {
-        border-radius: 20px;
-        box-shadow: 0px -3px 9px 1px rgba(16, 16, 16, 0.23);
-        width: 50%;
-        margin: auto;
-        border: 1px solid #ccc;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        &__avatar {
-          margin-top: 2rem;
-          border-radius: 50%;
-          max-width: 150px;
-          height: 150px;
-          object-fit: cover;
-        }
-
-        &__username {
-          margin: 2rem 0 2rem 0;
-          font-weight: bold;
-
-        }
+    &__validate{
+      width: 15%;
+      &__button{
+        border:none;
+        background-color: $mainColor;
+        color:$lightColor;
+        font-family: $raleway;
+        padding: .5rem 1rem;
+        font-weight: $bold;
+        font-size: 1rem;
+        border-radius: 10px;
       }
     }
   }
+
+  // &__head {
+  //   box-shadow: 0px -3px 9px 1px rgba(16, 16, 16, 0.23);
+  //   border: 1px solid #ccc;
+  //   border-radius: 20px;
+
+  //   &__container {
+  //     position: relative;
+  //     min-height: 100%;
+
+     
+
+  //     &__title {
+  //       font-size: 34px;
+  //       font-weight: bold;
+  //       z-index: 500;
+  //       position: absolute;
+  //       bottom: 0;
+  //       padding: 0 0 1rem 2rem;
+  //     }
+  //   }
+
+  //   &__ingredients {
+
+  //     // border: 1px solid #ccc;
+  //     // border-radius: 0 0 20px 20px;
+  //     // width: fit-content;
+  //     padding: 2rem 0 0 2rem;
+
+  //     &__title {
+  //       font-weight: bold;
+  //       font-size: 26px;
+  //     }
+
+  //     &__container {
+  //       padding: 2rem 0 0 0;
+  //       display: flex;
+  //       justify-content: flex-start;
+  //       flex-wrap: wrap;
+  //     }
+  //   }
+  // }
+
+  // &__body {
+  //   display: flex;
+  //   justify-content: space-between;
+  //   margin: 2rem 0 2rem 0;
+
+  //   &__steps {
+  //     padding-left: 2rem;
+  //     width: 50%;
+
+  //     &__title {
+  //       font-weight: bold;
+  //       font-size: 26px;
+  //       // margin: 2rem 0 2rem 0;
+  //     }
+
+  //     &__counters {
+  //       font-size: 20px;
+  //       font-weight: bold;
+  //       margin: 2rem 0 1rem 0;
+  //     }
+
+  //     &__text {
+  //       padding-left: 1rem;
+  //       font-size: 18px;
+  //     }
+  //   }
+
+
+  //   &__infos {
+  //     height: 40vh;
+  //     display: flex;
+  //     flex-direction: column;
+  //     justify-content: space-between;
+  //     width: 50%;
+  //     &__validate{
+  //       text-align: center;
+  //     }
+
+  //     &__owner-card {
+  //       // margin-right: 15rem;
+  //       text-align: center;
+  //       // border: 1px solid black;
+  //       width: 100%;
+
+  //       &__title {
+  //         font-weight: bold;
+  //         margin-bottom: 1rem;
+  //       }
+
+  //       &__card {
+  //         border-radius: 20px;
+  //         box-shadow: 0px -3px 9px 1px rgba(16, 16, 16, 0.23);
+  //         width: 50%;
+  //         margin: auto;
+  //         border: 1px solid #ccc;
+  //         display: flex;
+  //         flex-direction: column;
+  //         align-items: center;
+
+  //         &__avatar {
+  //           margin-top: 2rem;
+  //           border-radius: 50%;
+  //           max-width: 150px;
+  //           height: 150px;
+  //           object-fit: cover;
+  //         }
+
+  //         &__username {
+  //           margin: 2rem 0 2rem 0;
+  //           font-weight: bold;
+
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 
 
 }

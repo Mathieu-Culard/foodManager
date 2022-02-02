@@ -1,20 +1,95 @@
-.header{
+@import 'src/styles/vars';
+
+// .header{
+//   display: flex;
+//   height: 8vh;
+//   align-items: center;
+//   width: 100%;
+//   padding: 1rem 5% 1rem 5%;
+//   border-bottom: 1px solid #ccc;
+//   margin: auto;
+//   justify-content: space-between;
+//   &__title{
+//     font-size: 25px;
+//     font-weight: bold;
+//   }
+//   &__links{
+//     display: flex;
+//     width: 30%;
+//     justify-content: space-between;
+//   }
+// }
+.header {
+  font-family: $raleway;
+  padding-top: 2rem;
   display: flex;
-  height: 8vh;
+  color:$darkColor;
+  flex-direction: column;
   align-items: center;
-  width: 100%;
-  padding: 1rem 5% 1rem 5%;
-  border-bottom: 1px solid #ccc;
-  margin: auto;
-  justify-content: space-between;
-  &__title{
-    font-size: 25px;
-    font-weight: bold;
+  text-align: center;
+  &__nav{
+   align-self: flex-end;
+   width: 40%;
+   display: flex;
+   justify-content: space-around;
+    // &__item{
+
+    // }
   }
-  &__links{
-    display: flex;
-    width: 30%;
-    justify-content: space-between;
+
+
+  &__title {
+    font-weight: $bold;
+    font-size: 60px;
+    &.low{
+      padding: 8rem 0 4rem 0;
+    }
+    &.high{
+      padding: 2rem 0 4rem 0;
+    }
+  }
+  
+
+  &__desc {
+    white-space: nowrap;
+    width: 20%;
+    font-weight: $thin;
+    font-size: 30px;
+    padding-bottom: 4rem;
+  }
+
+  &__start{
+    width: 100%;
+    padding-bottom: 5rem;
+    &__register{
+      border-radius: 8px;
+      padding: 0.5rem 0 0.5rem 0;
+      width: 25%;
+      background-color: $mainColor;
+      border: none;
+      color: $lightColor;
+      font-size: 30px;
+      font-weight: $medium;
+      font-family: $raleway;
+    }
+    &__login{
+      width: 17%;
+      margin:auto;
+      display: flex;
+      justify-content: space-around;
+      color:$mainColor;
+      font-weight: $thin;
+      padding-top: 0.5rem;
+      &__link{
+        text-decoration: underline;
+        &:hover{
+          text-decoration: none;
+        }
+      }
+    }
   }
 }
 
+.active{
+  color:#555;
+}

@@ -1,7 +1,36 @@
+@import 'src/styles/vars';
+
 .recipes-list{
-  width: 90%;
+  width: 80%;
   margin: auto;
+  padding-bottom: 10rem;
+  min-height: 80vh;
+  &__head{
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+    &__title{
+      font-size:2rem;
+    }
+    &__add{
+      color:$mainColor;
+      text-decoration: underline;
+      font-size: 1.5rem;
+      &:hover{
+        text-decoration: none;
+      }
+    }
+  }
   &__content{
     display: flex;
+    justify-content: space-around;
+  }
+
+  &__text{
+    width: fit-content;
+    margin: auto;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-top: 5rem;
   }
 }

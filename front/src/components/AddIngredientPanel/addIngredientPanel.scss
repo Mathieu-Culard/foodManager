@@ -1,17 +1,46 @@
+@import 'src/styles/vars';
+
 .add-ingredient-panel {
   // position: relative;
-  max-height: 60vh;
+  color: $darkColor;
+  height: 60vh;
+
   // overflow-y: scroll;
-  &__content{
-    max-height: 60vh;
-    overflow-y: scroll;
+  &__title {
+    margin-bottom: 1rem;
+    width: fit-content;
   }
+
+  &__content {
+    max-height: 55vh;
+    overflow-y: auto;
+    padding: 1rem;
+    padding-bottom: 5rem;
+  }
+
   &__submit {
     width: 100%;
-    position: absolute;
-    bottom:0;
-    left:0;
+    text-align: center;
+    position: relative;
+    background-color: $lightColor;
+    height: 5vh;
+    bottom: 2rem;
+    &__button {
+      width: fit-content;
+      // align-self: center;
+      position: absolute;
+      bottom: -.5rem;
+      // left: 0;
+      border: none;
+      background-color: $mainColor;
+      padding: .5rem;
+      border-radius: 10px;
+      color:$lightColor;
+      font-family: $raleway;
+      font-weight: $bold;
+    }
   }
+
   .category {
     &__name {}
 
@@ -20,28 +49,41 @@
       flex-wrap: wrap;
 
       .ingredient {
-        border: 1px solid #ccc;
+        padding: .2rem;
+        display: flex;
+        justify-content: space-between;
+        border: 1px solid $darkColor;
         margin: 1rem;
         width: 200px;
         height: fit-content;
+        border-radius: 10px;
+        width: 20%;
+        background-color: #fff;
 
         &__image {
           object-fit: cover;
-          width: 100%;
-          max-height: 100px;
+          width: 20%;
+          max-height: 50px;
+          border-radius: 10px;
         }
 
         &__content {
+          width: 80%;
           height: 50px;
-          padding:0.5rem;
+          padding: 0.5rem;
           display: flex;
           align-items: center;
           justify-content: space-between;
 
-          &__name {}
+          &__name {
+            flex-grow: 2;
+          }
 
           &__input {
             width: 50px;
+            border: none;
+            font-family: $raleway;
+
           }
 
           &__unity {}

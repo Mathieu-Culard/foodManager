@@ -1,23 +1,107 @@
+@import 'src/styles/vars';
+
 .recipe-card {
   width: 20%;
-  height: 200px;
+  height: 350px;
+  border-radius: 10px;
 
   &__content {
-    z-index: 998;
-    height: 90%;
+    z-index: 990;
+    height: 100%;
     position: relative;
+    text-align: center;
+    font-family: $raleway;
+    font-weight: $medium;
+
+    &__title {
+      width: 100%;
+      font-weight: $bold;
+      background-color: $darkColor;
+      color: $lightColor;
+      padding: 1rem;
+      border-radius: 10px;
+      position: absolute;
+      bottom: 0;
+    }
+
     &__image {
+      border-radius: 10px;
       object-fit: cover;
       width: 100%;
       height: 100%;
     }
-    &__buttons{
-      position:absolute;
-      bottom:0;
+
+    &__buy {
+      height: fit-content;
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      border-radius: 5px;
+      background-color: $mainColor;
+      border: none;
+      font-family: $raleway;
+      font-weight: $medium;
+      font-size: .8rem;
+      padding: 0.2rem 0.5rem;
+      width: 25%;
+      color: $lightColor;
+    }
+
+    &__ready {
+      height: 2.2rem;
+      font-size: 0.8rem;
+      position: absolute;
+      top: 0.5rem;
+      right: 6rem;
+      border-radius: 5px;
+      background-color: #02a433;
+      // border: none;
+
+      padding: 0.3rem 0.5rem;
+      width: 20%;
+      color: $lightColor;
+    }
+
+    &__buttons {
+      position: absolute;
+      bottom: 3rem;
       right: 0;
       z-index: 1;
+      color: $mainColor;
+      display: flex;
+      width: 4rem;
+      justify-content: space-evenly;
+
+      &__edit {
+        display: block;
+        height: 1.5rem;
+        width: 1.5rem;
+        background-color: $lightColor;
+        padding: .3rem .2rem 0 .2rem;
+        border-radius: 5px;
+      }
+
+      &__delete {
+        height: 1.5rem;
+        width: 1.5rem;
+        border: none;
+        border-radius: 5px;
+        color: $lightColor;
+        background-color: $mainColor;
+        font-weight: $bold;
+        font-size: 1.2rem;
+        margin-bottom: .2rem;
+      }
+
     }
   }
 }
 
+.available {
+  border: 1px solid green;
+}
 
+
+.unavailable {
+  border: 1px solid red;
+}

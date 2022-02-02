@@ -17,8 +17,8 @@ const Snackbar = ({
 
   return (
     isOpen ? ReactDOM.createPortal(
-      <div className="snackbar">
-        <p className={`snackbar_message ${severity}`}>
+      <div className={`snackbar ${severity}`}>
+        <p className="snackbar__message">
           {message}
         </p>
       </div>,

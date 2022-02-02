@@ -1,0 +1,37 @@
+@import 'src/styles/vars';
+
+
+.register-form{
+  display: flex;
+  flex-direction: column;
+  margin: 3rem 5rem;
+  height: 12rem;
+  justify-content: space-around;
+  &__title{
+    align-self: center;
+    font-weight: $bold;
+    font-size: 1.2rem;
+    color:$mainColor;
+  }
+  &__item{
+    font-family: $raleway;
+    width: 350px;
+    border-radius: 5px;
+    border: 1px solid $darkColor;
+    box-shadow: none;
+    box-sizing: border-box;
+    padding-left: 1rem;
+    color:$darkColor;
+  }
+  
+  &__submit{
+    border-radius: 5px;
+    padding: 0.2rem 0;
+    background-color: $mainColor;
+    border: none;
+    color: $lightColor;
+    font-weight: $medium;
+    font-family: $raleway;
+    font-weight: $bold;
+  }
+}

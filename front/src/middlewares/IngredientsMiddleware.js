@@ -13,6 +13,9 @@ import {
   saveUserStock,
   VALIDATE_SHOPPING_LIST,
 } from 'src/actions/ingredients';
+import { fetchPublicRecipes, fetchMyRecipes } from 'src/actions/recipes';
+
+
 
 const IngredientsMiddleware = (store) => (next) => (action) => {
   switch (action.type) {
@@ -26,7 +29,7 @@ const IngredientsMiddleware = (store) => (next) => (action) => {
       const { addStock } = store.getState().ingredients;
       console.log('sheeeeh');
       console.log(addStock);
-      axios.post('http://localhost:8000/stock/add',
+      axios.post('http://localhost:8000/api/stock/add',
         {
           identifier: action.identifier,
           addStock,
@@ -38,18 +41,27 @@ const IngredientsMiddleware = (store) => (next) => (action) => {
         })
         .then((response) => {
           store.dispatch(fetchUserStock(action.identifier));
+          if (action.identifier === 'stock') {
+            store.dispatch(fetchUserStock('shop'));
+          }
           store.dispatch(closeModal());
+          store.dispatch(fetchPublicRecipes());
+          store.dispatch(fetchMyRecipes());
           console.log('xxxxxxxxxxx');
           console.log(response);
         })
         .catch((error) => {
-          console.log(error);
+          if (error.response.status === 401) {
+            localStorage.clear();
+            store.dispatch(logOut());
+            store.dispatch(openSnackbar(error.response.data, 'warning'));
+          }
         });
       next(action);
       break;
     }
     case FETCH_USER_STOCK: {
-      axios.get('http://localhost:8000/stock/list',
+      axios.get('http://localhost:8000/api/stock/list',
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt')}`,
@@ -62,13 +74,17 @@ const IngredientsMiddleware = (store) => (next) => (action) => {
           store.dispatch(saveUserStock(response.data, action.identifier));
         })
         .catch((error) => {
-          console.log(error);
+          if (error.response.status === 401) {
+            localStorage.clear();
+            store.dispatch(logOut());
+            store.dispatch(openSnackbar(error.response.data, 'warning'));
+          }
         });
       next(action);
       break;
     }
     case FETCH_INGREDIENTS: {
-      axios.get('http://localhost:8000/ingredients')
+      axios.get('http://localhost:8000/api/ingredients')
         .then((response) => {
           store.dispatch(saveIngredients(response.data));
         }).catch((error) => {
@@ -78,7 +94,7 @@ const IngredientsMiddleware = (store) => (next) => (action) => {
       break;
     }
     case CHANGE_STOCK_QUANTITY: {
-      axios.post(`http://localhost:8000/stock/edit/${action.id}`,
+      axios.post(`http://localhost:8000/api/stock/edit/${action.id}`,
         {
           newValue: action.newValue,
           identifier: action.identifier,
@@ -89,7 +105,13 @@ const IngredientsMiddleware = (store) => (next) => (action) => {
           },
         })
         .then(() => {
-          next(action); // store.dispatch(saveRecipes(response.data));
+          store.dispatch(fetchUserStock(action.identifier));
+          store.dispatch(fetchPublicRecipes());
+          store.dispatch(fetchMyRecipes());
+          if (action.identifier === 'stock') {
+            store.dispatch(fetchUserStock('shop'));
+          }
+          // store.dispatch(saveRecipes(response.data));
         }).catch((error) => {
           if (error.response.status === 401) {
             localStorage.clear();
@@ -98,10 +120,11 @@ const IngredientsMiddleware = (store) => (next) => (action) => {
           }
           console.log(error.response);
         });
+      next(action);
       break;
     }
     case DELETE_INGREDIENT: {
-      axios.delete(`http://localhost:8000/stock/delete/${action.id}`,
+      axios.delete(`http://localhost:8000/api/stock/delete/${action.id}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt')}`,
@@ -111,27 +134,44 @@ const IngredientsMiddleware = (store) => (next) => (action) => {
           },
         })
         .then((response) => {
-          next(action);
+          store.dispatch(fetchPublicRecipes());
+          store.dispatch(fetchMyRecipes());
+          store.dispatch(fetchUserStock(action.identifier));
+          if (action.identifier === 'stock') {
+            store.dispatch(fetchUserStock('shop'));
+          }
         }).catch((error) => {
-          console.log(error.response);
+          if (error.response.status === 401) {
+            localStorage.clear();
+            store.dispatch(logOut());
+            store.dispatch(openSnackbar(error.response.data, 'warning'));
+          }
         });
+      next(action);
       break;
     }
     case VALIDATE_SHOPPING_LIST: {
-      axios.post('http://localhost:8000/shop/validate',
-        {},
+      const { recipesShop } = store.getState().user;
+      axios.post('http://localhost:8000/api/shop/validate',
+        { recipesShop },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt')}`,
           },
         })
         .then((response) => {
+          store.dispatch(fetchMyRecipes());
+          store.dispatch(fetchPublicRecipes());
           store.dispatch(fetchUserStock('stock'));
-          next(action);
+          store.dispatch(fetchUserStock('shop'));
         }).catch((error) => {
-          console.log(error);
+          if (error.response.status === 401) {
+            localStorage.clear();
+            store.dispatch(logOut());
+            store.dispatch(openSnackbar(error.response.data, 'warning'));
+          }
         });
-     
+      next(action);
       break;
     }
     default:

@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Switch, Route } from 'react-router-dom';
+import './app.scss';
 
 import Header from 'src/containers/Header';
 import ModalPanel from 'src/containers/ModalPanel';

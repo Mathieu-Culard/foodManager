@@ -1,24 +1,49 @@
+@import 'src/styles/vars';
+
 .user-ingredient-card {
-  padding: 1rem;
-  margin-top: 1rem; 
+  background-color: #fff;
+  padding: .5rem 1rem;
+  margin-top: 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: nowrap;
-  border:1px solid #ccc;
-  border-radius: 20px;
-  box-shadow: 0px -3px 9px 1px rgba(16, 16, 16, 0.23);
+  border: 1px solid $darkColor;
+  border-radius: 10px;
+  height: fit-content;
+  // box-shadow: 0px -3px 9px 1px rgba(16, 16, 16, 0.23);
+  &__name {
+    flex-grow: 1;
+  }
+
   &__image {
+    width: 70px;
+    // box-shadow: 0px -3px 9px 1px rgba(16, 16, 16, 0.23);
+    height: 50px;
     object-fit: cover;
-    max-width: 20%;
-    max-height: 40vh;
+    border-radius: 10px;
+    margin-right: 1rem;
   }
-  &__input{
+
+  &__input {
+    font-family: $raleway;
+    font-size: 1rem;
+    border: none;
     width: 20%;
-    padding: 0px;
+    color:$darkColor;
+    // padding: 2px;
   }
-  &__buttons{
-    display: flex;
-    flex-direction: column;
+
+  &__buttons {
+    margin-left: 1rem;
+
+    &>button {
+      background-color: $mainColor;
+      border:none;
+      padding: 0 .3rem;
+      color:$lightColor;
+      font-size: 1.2rem;
+      border-radius: 5px;
+    }
   }
 }

@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import RecipePage from 'src/pages/RecipePage';
-import { fetchRecipe } from 'src/actions/recipes';
+import { fetchRecipe, cookRecipe } from 'src/actions/recipes';
 
 const mapStateToProps = (state) => ({
   recipe: state.recipe.currentRecipe,
@@ -9,6 +9,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   fetchRecipe: (id, isEdit) => dispatch(fetchRecipe(id, isEdit)),
+  cook: (id) => dispatch(cookRecipe(id)),
 });
 
 export default connect(

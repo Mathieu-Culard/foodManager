@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { push } from 'connected-react-router';
+import { logOut } from 'src/actions/connection';
 import {
   FETCH_PUBLIC_RECIPES,
   FETCH_RECIPE,
@@ -13,30 +14,124 @@ import {
   saveMyRecipes,
   setInfoForEdit,
   DELETE_RECIPE,
+  BUY_RECIPE,
+  BUY_LESS_RECIPE,
+  DELETE_RECIPE_TO_BUY,
+  COOK_RECIPE,
 } from 'src/actions/recipes';
-import { endLoad } from 'src/actions/utils';
+import { fetchUserStock } from 'src/actions/ingredients';
+import { endLoad, openSnackbar } from 'src/actions/utils';
 
 const RecipesMiddleware = (store) => (next) => (action) => {
   switch (action.type) {
-    case DELETE_RECIPE: {
-      axios.delete(`http://localhost:8000/recipe/delete/${action.id}`,
+    case COOK_RECIPE: {
+      axios.post(`http://localhost:8000/api/recipe/cook/${action.recipeId}`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt')}`,
           },
         })
-        .then((response)=>{
+        .then((response) => {
+          console.log(response.data);
+          store.dispatch(fetchUserStock('stock'));
+          store.dispatch(fetchUserStock('shop'));
+        })
+        .catch((error) => {
+          if (error.response.status === 401) {
+            localStorage.clear();
+            store.dispatch(logOut());
+            store.dispatch(openSnackbar(error.response.data, 'warning'));
+          }
+        });
+      next(action);
+      break;
+    }
+    case DELETE_RECIPE_TO_BUY: {
+      axios.delete(`http://localhost:8000/api/recipe/buy/delete/${action.recipeId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+          },
+        })
+        .then((response) => {
+          console.log(response.data);
+          store.dispatch(fetchUserStock('shop'));
+        })
+        .catch((error) => {
+          if (error.response.status === 401) {
+            localStorage.clear();
+            store.dispatch(logOut());
+            store.dispatch(openSnackbar(error.response.data, 'warning'));
+          }
+        });
+      next(action);
+      break;
+    }
+    case BUY_LESS_RECIPE: {
+      axios.post(`http://localhost:8000/api/recipe/buyless/${action.recipeId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+          },
+        })
+        .then(() => {
+          store.dispatch(fetchUserStock('shop'));
+        }).catch((error) => {
+          if (error.response.status === 401) {
+            localStorage.clear();
+            store.dispatch(logOut());
+            store.dispatch(openSnackbar(error.response.data, 'warning'));
+          }
+        });
+      next(action);
+      break;
+    }
+    case BUY_RECIPE: {
+      axios.post(`http://localhost:8000/api/recipe/buy/${action.recipeId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+          },
+        })
+        .then((response) => {
+          store.dispatch(fetchUserStock('shop'));
+          console.log(response);
+        }).catch((error) => {
+          if (error.response.status === 401) {
+            localStorage.clear();
+            store.dispatch(logOut());
+            store.dispatch(openSnackbar(error.response.data, 'warning'));
+          }
+        });
+      next(action);
+      break;
+    }
+    case DELETE_RECIPE: {
+      axios.delete(`http://localhost:8000/api/recipe/delete/${action.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+          },
+        })
+        .then((response) => {
           console.log(response.data);
           store.dispatch(fetchMyRecipes());
         })
-        .catch((error)=>{
-          console.log(error);
+        .catch((error) => {
+          if (error.response.status === 401) {
+            localStorage.clear();
+            store.dispatch(logOut());
+            store.dispatch(openSnackbar(error.response.data, 'warning'));
+          }
         });
       next(action);
       break;
     }
     case FETCH_MY_RECIPES: {
-      axios.get('http://localhost:8000/recipe/my-recipes',
+      axios.get('http://localhost:8000/api/recipe/my-recipes',
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt')}`,
@@ -45,13 +140,16 @@ const RecipesMiddleware = (store) => (next) => (action) => {
         .then((response) => {
           store.dispatch(saveMyRecipes(response.data));
         }).catch((error) => {
-          console.log(error);
+          if (error.response.status === 401) {
+            localStorage.clear();
+            store.dispatch(logOut());
+            store.dispatch(openSnackbar(error.response.data, 'warning'));
+          }
         });
       next(action);
       break;
     }
     case EDIT_RECIPE: {
-      console.log('bler');
       const {
         name,
         picture,
@@ -74,20 +172,25 @@ const RecipesMiddleware = (store) => (next) => (action) => {
       formData.append('shared', shared);
       // formData.append('quantity[]', ingredients.map((ingredient) => ingredient.quantity));
 
-      axios.post(`http://localhost:8000/recipe/edit/${action.id}`,
+      axios.post(`http://localhost:8000/api/recipe/edit/${action.id}`,
         formData,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt')}`,
             'Content-Type': 'multipart/form-data',
           },
-        }).then((response) => {
+        })
+        .then((response) => {
           console.log(response);
           store.dispatch(clearAddRecipeForm());
           store.dispatch(push('/my-recipes'));
           console.log('mais dou ?');
         }).catch((error) => {
-          console.log(error);
+          if (error.response.status === 401) {
+            localStorage.clear();
+            store.dispatch(logOut());
+            store.dispatch(openSnackbar(error.response.data, 'warning'));
+          }
         });
       next(action);
       break;
@@ -103,8 +206,6 @@ const RecipesMiddleware = (store) => (next) => (action) => {
       const formData = new FormData();
       formData.append('name', name);
       formData.append('picture', picture);
-      // formData.append('ingredients[]', ingredients.map((ingredient) => ingredient.id));
-      // formData.append('steps[]', steps.map((step) => (step.text)));
       formData.append('ingredients', JSON.stringify(ingredients.map((ingredient) => (
         {
           id: ingredient.id,
@@ -113,28 +214,37 @@ const RecipesMiddleware = (store) => (next) => (action) => {
       ))));
       formData.append('steps', JSON.stringify(steps.map((step) => step.text)));
       formData.append('shared', shared);
-      // formData.append('quantity[]', ingredients.map((ingredient) => ingredient.quantity));
-
-      axios.post('http://localhost:8000/recipe/add',
+      axios.post('http://localhost:8000/api/recipe/add',
         formData,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt')}`,
             'Content-Type': 'multipart/form-data',
           },
-        }).then((response) => {
-          console.log(response);
+        })
+        .then((response) => {
           store.dispatch(clearAddRecipeForm());
           store.dispatch(push('/my-recipes'));
-          console.log('mais dou ?');
         }).catch((error) => {
-          console.log(error);
+          if (error.response.status === 401) {
+            localStorage.clear();
+            store.dispatch(logOut());
+            store.dispatch(openSnackbar(error.response.data, 'warning'));
+          }
+          else {
+            store.dispatch(openSnackbar(error.response.data, 'warning'));
+          }
         });
       next(action);
       break;
     }
     case FETCH_PUBLIC_RECIPES: {
-      axios.get('http://localhost:8000/recipes')
+      axios.get('http://localhost:8000/api/recipes',
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+          },
+        })
         .then((response) => {
           store.dispatch(saveRecipes(response.data));
         }).catch((error) => {
@@ -145,7 +255,12 @@ const RecipesMiddleware = (store) => (next) => (action) => {
     }
     case FETCH_RECIPE: {
       console.log(action.id);
-      axios.get(`http://localhost:8000/recipe/${action.id}`)
+      axios.get(`http://localhost:8000/api/recipe/${action.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+          },
+        })
         .then((response) => {
           if (action.isEdit) {
             store.dispatch(setInfoForEdit(response.data));
