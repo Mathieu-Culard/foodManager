@@ -112,7 +112,16 @@ td {
 }
 
 .page__add {}
+.edit{
+  color: #002521;
+  height: 100%;
+}
 
+.remove{
+  text-decoration: none;
+  color: #e3630c;
+  font-size: 2rem;
+}
 .add-form__item {
   display: flex;
   flex-direction: column;

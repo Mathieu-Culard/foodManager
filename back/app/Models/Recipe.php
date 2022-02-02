@@ -35,8 +35,16 @@ class Recipe extends CoreModel  implements JsonSerializable
   /**
    * @var int
    */
-  private $user_id;
+  private $userId;
 
+  /**
+   * @var array
+   */
+  private $ingredients;
+  /**
+   * @var array
+   */
+  private $steps;
 
 
 
@@ -65,24 +73,24 @@ class Recipe extends CoreModel  implements JsonSerializable
     return $recipe;
   }
 
-  /**
-   *retrieve all recipes owned by a particular user
-   */
-  public static function findUserRecipes($id)
-  {
-    $pdo = Database::getPDO();
-    $sql = "SELECT * FROM recipes WHERE user_id= :user_id";
-    $preparedQuery = $pdo->prepare($sql);
-    $preparedQuery->bindValue(':user_id', $id);
-    $preparedQuery->execute();
-    $recipes = $preparedQuery->fetchAll(PDO::FETCH_CLASS, static::class);
-    $result = [];
-    $userStock = Ingredient::getUserStock($id);
-    foreach ($recipes as $recipe) {
-      $result[] = self::checkDoable($recipe, $userStock);
-    }
-    return $result;
-  }
+  // /**
+  //  *retrieve all recipes owned by a particular user
+  //  */
+  // public static function findUserRecipes($id)
+  // {
+  //   $pdo = Database::getPDO();
+  //   $sql = "SELECT * FROM recipes WHERE user_id= :user_id";
+  //   $preparedQuery = $pdo->prepare($sql);
+  //   $preparedQuery->bindValue(':user_id', $id);
+  //   $preparedQuery->execute();
+  //   $recipes = $preparedQuery->fetchAll(PDO::FETCH_CLASS, static::class);
+  //   $result = [];
+  //   $userStock = Ingredient::getUserStock($id);
+  //   foreach ($recipes as $recipe) {
+  //     $result[] = self::checkDoable($recipe, $userStock);
+  //   }
+  //   return $result;
+  // }
 
   public static function checkDoable($recipe, $userStock)
   {
@@ -189,7 +197,8 @@ class Recipe extends CoreModel  implements JsonSerializable
     $statement->execute();
   }
 
-  public static function deleteAllWantedRecipe($id){
+  public static function deleteAllWantedRecipe($id)
+  {
     $pdo = Database::getPDO();
     $sql = "DELETE FROM wanted_recipes
             WHERE recipe_id= :recipe_id
@@ -199,48 +208,64 @@ class Recipe extends CoreModel  implements JsonSerializable
     $statement->execute();
   }
 
-  public static function getWantedRecipes($userId)
-  {
-    $pdo = Database::getPDO();  //fetch wanted recipes
-    $sql = "SELECT * 
-            FROM wanted_recipes
-            WHERE user_id = :user_id";
-    $statement = $pdo->prepare($sql);
-    $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
-    $statement->execute();
-    $wantedRecipe = $statement->fetchAll(PDO::FETCH_ASSOC);
-    // Recipe::getWantedRecipes($granted['userId']);
-    $userStock = Ingredient::getUserIngredients($userId); // fetch user stock
-    // echo json_encode($userStock);
-    $wantedRecipesIngredients = [];
-    foreach ($wantedRecipe as $recipe) {  //add the needed ingredients to the wanted recipes
-      $ingredients = Ingredient::findRecipeIngredients($recipe['recipe_id']);
-      // $processedIngredients=
-      $wantedRecipesIngredients[] = [ //create data to return 
-        'id' => $recipe['recipe_id'],
-        'name' => Recipe::find($recipe['recipe_id'])->getName(),
-        'quantity' => $recipe['quantity'],
-        'ingredients' =>  Ingredient::getRightAmountOfIngredients($ingredients, $recipe['quantity']),
-      ];
-    }
-    // echo json_encode(empty($wantedRecipesIngredients));
-    if (!empty($wantedRecipesIngredients)) {
-      $test = Ingredient::reduceIngredients($wantedRecipesIngredients, []);
-      return Ingredient::getIngredientsToBuy($test, $userStock);
-    }
-    return [];
-    // self::getRightAmountOfIngredients($ingredients, $recipe['quantity']
-  }
+  // public static function getWantedRecipes($userId)
+  // {
+  //   $pdo = Database::getPDO();  //fetch wanted recipes
+  //   $sql = "SELECT * 
+  //           FROM wanted_recipes
+  //           WHERE user_id = :user_id";
+  //   $statement = $pdo->prepare($sql);
+  //   $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
+  //   $statement->execute();
+  //   $wantedRecipe = $statement->fetchAll(PDO::FETCH_ASSOC);
+  //   // Recipe::getWantedRecipes($granted['userId']);
+  //   $userStock = Ingredient::getUserIngredients($userId); // fetch user stock
+  //   // echo json_encode($userStock);
+  //   $wantedRecipesIngredients = [];
+  //   foreach ($wantedRecipe as $recipe) {  //add the needed ingredients to the wanted recipes
+  //     $ingredients = Ingredient::findRecipeIngredients($recipe['recipe_id']);
+  //     // $processedIngredients=
+  //     $wantedRecipesIngredients[] = [ //create data to return 
+  //       'id' => $recipe['recipe_id'],
+  //       'name' => Recipe::find($recipe['recipe_id'])->getName(),
+  //       'quantity' => $recipe['quantity'],
+  //       'ingredients' =>  Ingredient::getRightAmountOfIngredients($ingredients, $recipe['quantity']),
+  //     ];
+  //   }
+  //   // echo json_encode(empty($wantedRecipesIngredients));
+  //   if (!empty($wantedRecipesIngredients)) {
+  //     $test = Ingredient::reduceIngredients($wantedRecipesIngredients, []);
+  //     return Ingredient::getIngredientsToBuy($test, $userStock);
+  //   }
+  //   return [];
+  //   // self::getRightAmountOfIngredients($ingredients, $recipe['quantity']
+  // }
 
+
+  public static function checkRecipeData($name, $filteredIngredients, $steps)
+  {
+    if (trim($name) === "") {
+      return "veuillez ajouter un nom a votre recette";
+    }
+    if (empty($filteredIngredients)) {
+      // echo $ingredients;
+      echo 'oui';
+      return "veuillez ajouter au moins un ingredient à votre recette";
+    }
+    if (empty($steps)) {
+      return "veuillez ajouter au moins une étape à votre recette";
+    }
+    if (empty($_FILES['picture'])) {
+      return "veuillez ajouter une photo de votre recette";
+    }
+  }
 
   /**
    * insert à new recipe
    */
-  public static function addRecipe($name, $shared, $ingredients, $steps, $userId, $picName)
+  public function insert()
   {
-
     $pdo = Database::getPDO();
-    $error = [];
     $sql = "INSERT INTO recipes (
       name,
       image,
@@ -255,29 +280,19 @@ class Recipe extends CoreModel  implements JsonSerializable
       :reported,
       :user_id
       )";
-    try {
-      //insert the new recipe
-      $statement = $pdo->prepare($sql);
-      $statement->bindValue(':name', $name);
-      $statement->bindValue(':image', $picName);
-      $statement->bindValue(':public', $shared ? 1 : 0);
-      $statement->bindValue(':reported', 0);
-      $statement->bindValue(':user_id', $userId);
-      $statement->execute();
-      $insertedRows = $statement->rowCount();
-      if ($insertedRows > 0) { // if it worked, insert steps and ingredients linked to that recipe
-        $recipeId = $pdo->lastInsertId();
-        Ingredient::addRecipesIngredients($ingredients, $recipeId);
-        Step::addRecipeSteps($steps, $recipeId);
-        return $recipeId;
-      } else {
-        return 'ckc';
-      }
-    } catch (PDOException $e) {
-      return [
-        'error' => $e->errorInfo,
-        'model' => 'recipe'
-      ];
+    $statement = $pdo->prepare($sql);
+    $statement->bindValue(':name', $this->name);
+    $statement->bindValue(':image', $this->image);
+    $statement->bindValue(':public', $this->public ? 1 : 0);
+    $statement->bindValue(':reported', 0);
+    $statement->bindValue(':user_id', $this->userId);
+    $statement->execute();
+    $insertedRows = $statement->rowCount();
+    if ($insertedRows > 0) {
+      $recipeId = $pdo->lastInsertId();
+      return $recipeId;
+    } else {
+      return false;
     }
   }
 
@@ -292,14 +307,14 @@ class Recipe extends CoreModel  implements JsonSerializable
     $statement = $pdo->prepare($sql);
     $statement->bindValue(':id', $this->id, PDO::PARAM_INT);
     $statement->execute();
-    self::deleteAllWantedRecipe($this->id);
+    // self::deleteAllWantedRecipe($this->id);
     // On retourne VRAI, si au moins une ligne supprimée
     return ($statement->rowCount() > 0);
   }
   /**
    * update recipe infos
    */
-  public function updateRecipe($picName)
+  public function updateRecipe()
   {
     $pdo = Database::getPDO();
     $sql = "UPDATE recipes
@@ -312,11 +327,39 @@ class Recipe extends CoreModel  implements JsonSerializable
     $statement = $pdo->prepare($sql);
     $statement->bindValue(':name', $this->name);
     $statement->bindValue(':public', $this->public ? 1 : 0);
-    $statement->bindValue(':image', $picName);
+    $statement->bindValue(':image', $this->image);
     $statement->bindValue(':id', $this->id);
     $statement->execute();
   }
 
+  /**
+   * add various ingredients to a recipe
+   */
+  public function insertRecipesIngredients()
+  {
+    $pdo = Database::getPDO();
+    foreach ($this->ingredients as $ingredient) {
+      $sql = "INSERT INTO recipe_ingredients (
+          ingredient_id,
+          recipe_id,
+          quantity
+        ) VALUES (
+          :ingredient_id,
+          :recipe_id,
+          :quantity
+          )
+        ";
+      $statement = $pdo->prepare($sql);
+      $statement->bindValue(':ingredient_id', $ingredient['id']);
+      $statement->bindValue(':recipe_id', $this->id);
+      $statement->bindValue(':quantity', $ingredient['quantity']);
+      $statement->execute();
+      if ($statement->rowCount() == 0) {
+        return false;
+      }
+    }
+    return true;
+  }
   /**
    * Get the value of name
    *
@@ -441,5 +484,53 @@ class Recipe extends CoreModel  implements JsonSerializable
     $vars = get_object_vars($this);
 
     return $vars;
+  }
+
+  /**
+   * Get the value of ingredients
+   *
+   * @return  array
+   */
+  public function getIngredients()
+  {
+    return $this->ingredients;
+  }
+
+  /**
+   * Set the value of ingredients
+   *
+   * @param  array  $ingredients
+   *
+   * @return  self
+   */
+  public function setIngredients(array $ingredients)
+  {
+    $this->ingredients = $ingredients;
+
+    return $this;
+  }
+
+  /**
+   * Get the value of steps
+   *
+   * @return  array
+   */
+  public function getSteps()
+  {
+    return $this->steps;
+  }
+
+  /**
+   * Set the value of steps
+   *
+   * @param  array  $steps
+   *
+   * @return  self
+   */
+  public function setSteps(array $steps)
+  {
+    $this->steps = $steps;
+
+    return $this;
   }
 }

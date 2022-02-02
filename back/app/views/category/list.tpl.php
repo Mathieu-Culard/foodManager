@@ -23,8 +23,6 @@
       </tbody>
     </table>
   </div>
-
-
   <div  class="page__add">
     <h2><?= empty($currentCategory) ? "Ajouter" : "Modifier" ?> une catégorie</h2>
     <form action="" method="POST" enctype="multipart/form-data">

@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     die();
 }
 
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: http://localhost:8080');
 // header('Content-Type: application/json');
 
 // $ret = [
@@ -419,21 +419,14 @@ $router->map(
 --------------*/
 
 $match = $router->match();
-
 if ($match) {
     $controllerToUse = $match['target']['controller'];
     $methodToUse =  $match['target']['method'];
     $urlParams = $match['params'];
-    $name = explode("-", $match['name']);
-    if ($name[0] == "admin") {
-        $controller = new $controllerToUse($router, $match['name']);
-        $controller->$methodToUse($urlParams);
-    } else {
-        $controller = new $controllerToUse();
-        $controller->$methodToUse($urlParams);
-    }
+    $controller = new $controllerToUse($router, $match['name']);
+    $controller->$methodToUse($urlParams);
 } else {
-    http_response_code(404);
+    http_response_code(400);
     exit;
 }
 

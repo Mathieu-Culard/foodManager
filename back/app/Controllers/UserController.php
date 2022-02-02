@@ -11,36 +11,37 @@ class UserController
   public function register()
   {
     $data = json_decode(file_get_contents("php://input"));
-    $username = htmlspecialchars($data->username) ?? '';
-    $password = $data->password ?? '';
-    $passwordConf = $data->passwordConf ?? '';
-    $email = filter_var($data->email, FILTER_SANITIZE_EMAIL) ?? '';
-
-    $user = new User();
-    // $error="";
-    $user->setUsername($username);
-    if ($data->email == $email && filter_var($email, FILTER_VALIDATE_EMAIL)) {
-      $user->setEmail($email);
-    } else {
-      $error = "Email incorrect";
+    //retrive and sanitize data
+    $username = trim(htmlspecialchars($data->username));
+    $password = $data->password;
+    $passwordConf = $data->passwordConf;
+    $email = filter_var($data->email, FILTER_SANITIZE_EMAIL);
+    //validate data
+    if ($data->username !== $username || strlen($username) === 0) {
+      $error = "Veuillez renseigner un nom d'utilisateur valide";
     }
-    if ($password === $passwordConf && $password != '') {
-      $user->setPassword(password_hash($password, PASSWORD_DEFAULT)); //password_verify
-    } else {
-      $error = "les mots de passe ne correspondent pas";
+    if ($data->email !== $email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+      $error = "Veuillez renseigner une adresse email valide";
     }
-    $user->setAvatar('avatar.png');
-    $user->setRole('ROLE_USER');
-
+    if ($password !== $passwordConf) {
+      $error = "Les mots de passe ne correspondent pas";
+    } else if (strlen($password) < 8) {
+      $error = "Votre mot de passe doit faire au moins 8 caractères";
+    }
     if (!isset($error)) {
+      $user = new User();
+      $user->setUsername($username);
+      $user->setEmail($email);
+      $user->setPassword(password_hash($password, PASSWORD_DEFAULT));
+      $user->setAvatar('avatar.png');
+      $user->setRole('ROLE_USER');
       $response = $user->insert();
       if ($response instanceof User) {
         http_response_code(201);
-        echo json_encode($response);
+        echo json_encode('Bienvenue dans food manager');
       } else {
-        // $error=
-        http_response_code(400);
-        echo json_encode(User::createCustomError($response));
+        http_response_code(409);
+        echo json_encode($response); // in this case response is an error from PDO
       }
     } else {
       http_response_code(400);
@@ -52,8 +53,8 @@ class UserController
   public function login()
   {
     $data = json_decode(file_get_contents("php://input"));
-    $username = $data->username ?? '';
-    $password = $data->password ?? '';
+    $username = $data->username;
+    $password = $data->password;
     $user = User::find($username);
     if (!empty($user)) {
       if (password_verify($password, $user->getPassword())) {
@@ -61,11 +62,11 @@ class UserController
         echo json_encode($loginInfo);
       } else {
         http_response_code(401);
-        echo json_encode('wrong password');
+        echo json_encode('Mot de passe incorect');
       }
     } else {
       http_response_code(401);
-      echo json_encode('wrong username');
+      echo json_encode('Cet utilisateur n\'existe pas');
     }
   }
 

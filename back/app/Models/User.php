@@ -35,6 +35,58 @@ class User extends CoreModel implements JsonSerializable
      */
     private $role;
 
+    /**
+     * @var array
+     */
+    private $stock;
+    /**
+     * @var array
+     */
+    private $shop;
+    /**
+     * @var array
+     */
+    private $recipesShop;
+    /**
+     * @var array
+     */
+    private $recipes;
+
+    /**
+     * retrive a user by its username
+     */
+    public static function find($username)
+    {
+        $pdo = Database::getPDO();
+        $sql = "SELECT * FROM `users` WHERE `username` = :username ";
+        $preparedQuery = $pdo->prepare($sql);
+        $preparedQuery->execute([
+            ':username' => $username,
+        ]);
+        $user = $preparedQuery->fetchObject(static::class);
+        return $user;
+    }
+
+    public static function findAll()
+    {
+        $pdo = Database::getPDO();
+        $sql = 'SELECT * FROM `users`';
+        $pdoStatement = $pdo->query($sql);
+        $results = $pdoStatement->fetchAll(PDO::FETCH_CLASS, static::class);
+        return $results;
+    }
+
+    public static function findbyId($id)
+    {
+        $pdo = Database::getPDO();
+        $sql = "SELECT * FROM `users` WHERE id = :id ";
+        $statement = $pdo->prepare($sql);
+        $statement->bindValue(':id', $id, PDO::PARAM_INT);
+        $statement->execute();
+        $user = $statement->fetchObject(static::class);
+        return $user;
+    }
+
 
     /**
      * retrive the infos of the user that own a particular recipe
@@ -54,31 +106,9 @@ class User extends CoreModel implements JsonSerializable
         $steps = $preparedQuery->fetchObject(static::class);
         return $steps;
     }
-    /**
-     * retrive a user by its username
-     */
-    public static function find($username)
-    {
-        $pdo = Database::getPDO();
-        $sql = "SELECT * FROM `users` WHERE `username` = :username ";
-        $preparedQuery = $pdo->prepare($sql);
-        $preparedQuery->execute([
-            ':username' => $username,
-        ]);
-        $user = $preparedQuery->fetchObject(static::class);
-        return $user;
-    }
 
-    public static function findbyId($id)
-    {
-        $pdo = Database::getPDO();
-        $sql = "SELECT * FROM `users` WHERE id = :id ";
-        $statement = $pdo->prepare($sql);
-        $statement->bindValue(':id', $id, PDO::PARAM_INT);
-        $statement->execute();
-        $user = $statement->fetchObject(static::class);
-        return $user;
-    }
+
+
 
     public function changeRole()
     {
@@ -130,7 +160,13 @@ class User extends CoreModel implements JsonSerializable
                 return $this;
             }
         } catch (PDOException $e) {
-            return $e->errorInfo;
+            $arr = explode(" ", $e->errorInfo[2]);
+            $duplicate = $arr[count($arr) - 1];
+            if ($duplicate === "'username'") {
+                return "Ce nom d'utilisateur est deja utilisé";
+            } else {
+                return "L'adresse e-mail est deja utilisée";
+            }
         }
     }
 
@@ -140,20 +176,13 @@ class User extends CoreModel implements JsonSerializable
     public function getConnectionInfo()
     {
         $jwt = $this->createToken();
+        $this->stock = $this->findUserIngredients();
+        $this->shop = $this->findUserIngredients('shop');
+        $this->recipesShop = $this->getWantedRecipes();
+        $this->recipes = $this->findUserRecipes();
         return ([
-            'message' => "success",
             'token' => $jwt,
-            'user' => [
-                'id' => $this->getId(),
-                'email' => $this->getEmail(),
-                'username' => $this->getUsername(),
-                'role' => $this->getRole(),
-                'avatar' => $this->getAvatar(),
-                'stock' => Ingredient::findUserIngredients($this->getId()),
-                'shop' => Ingredient::findUserIngredients($this->getId(), 'shop'),
-                'recipesShop' => Recipe::getWantedRecipes($this->getId()),
-                'recipes' => Recipe::findUserRecipes($this->getId()),
-            ]
+            'user' => $this,
         ]);
     }
 
@@ -163,13 +192,11 @@ class User extends CoreModel implements JsonSerializable
     public function createToken()
     {
         $configData = parse_ini_file(__DIR__ . '/../config.ini');
-
-        // $secret_key = "TEST";
-        $issuer_claim = "THE_ISSUER"; // this can be the servername
-        $audience_claim = "THE_AUDIENCE";
-        $issuedat_claim = time(); // issued at
-        $notbefore_claim = $issuedat_claim; //not before in seconds
-        $expire_claim = $issuedat_claim + 3600; // expire time in seconds
+        $issuer_claim = "localhost:8000";
+        $audience_claim = "localhost:8080";
+        $issuedat_claim = time(); 
+        $notbefore_claim = $issuedat_claim; 
+        $expire_claim = $issuedat_claim + 3600; 
         $token = [
             "iss" => $issuer_claim,
             "aud" => $audience_claim,
@@ -196,41 +223,95 @@ class User extends CoreModel implements JsonSerializable
         if ($jwt) {
             try {
                 $decoded = JWT::decode($jwt, $configData['JWT_KEY'], array('HS256'));
-                return [
-                    "message" => "success",
-                    "userId" => $decoded->data->id,
-                ];
+                return self::findbyId($decoded->data->id);
             } catch (\Exception $e) {
-                return [
-                    "message" => "fail",
-                    "error" => $e->getMessage()
-                ];
+                return false;
             }
         }
     }
 
-    public static function findAll()
+    /**
+     * return users's ingredients sorted by food category
+     */
+    public function findUserIngredients($identifier = 'stock')
+    {
+        $categories = Ingredient::getCategories();
+        $ingredients = [];
+        $needed = $identifier == 'shop' ? 1 : 0;
+        foreach ($categories as $category) {
+            $pdo = Database::getPDO();
+            $sql = "SELECT i.id, i.name,i.image, ui.quantity, u.unity, i.min_buy as minBuy
+        FROM ingredients i
+        INNER JOIN users_ingredients ui 
+        ON ui.ingredient_id = i.id
+        LEFT JOIN unity u 
+        ON u.id= i.unity_id
+        WHERE ui.user_id = :userId 
+        AND ui.needed= :needed
+        AND i.category_id= :categoryId";
+            $preparedQuery = $pdo->prepare($sql);
+            $preparedQuery->bindValue(':userId', $this->id);
+            $preparedQuery->bindValue(':categoryId', $category['id']);
+            $preparedQuery->bindValue(':needed', $needed);
+            $preparedQuery->execute();
+            $categoryIngredients = $preparedQuery->fetchAll(PDO::FETCH_CLASS, Ingredient::class);
+            array_push($ingredients, ['name' => $category['name'], 'ingredients' => $categoryIngredients]);
+        }
+        return $ingredients;
+    }
+
+    public function getWantedRecipes()
+    {
+        $pdo = Database::getPDO();  //fetch wanted recipes
+        $sql = "SELECT * 
+            FROM wanted_recipes
+            WHERE user_id = :user_id";
+        $statement = $pdo->prepare($sql);
+        $statement->bindValue(':user_id', $this->id, PDO::PARAM_INT);
+        $statement->execute();
+        $wantedRecipe = $statement->fetchAll(PDO::FETCH_ASSOC);
+        // Recipe::getWantedRecipes($granted['userId']);
+        $userStock = Ingredient::getUserIngredients($this->id); // fetch user stock
+        // echo json_encode($userStock);
+        $wantedRecipesIngredients = [];
+        foreach ($wantedRecipe as $recipe) {  //add the needed ingredients to the wanted recipes
+            $ingredients = Ingredient::findRecipeIngredients($recipe['recipe_id']);
+            // $processedIngredients=
+            $wantedRecipesIngredients[] = [ //create data to return 
+                'id' => $recipe['recipe_id'],
+                'name' => Recipe::find($recipe['recipe_id'])->getName(),
+                'quantity' => $recipe['quantity'],
+                'ingredients' =>  Ingredient::getRightAmountOfIngredients($ingredients, $recipe['quantity']),
+            ];
+        }
+        // echo json_encode(empty($wantedRecipesIngredients));
+        if (!empty($wantedRecipesIngredients)) {
+            $reducedIngredient = Ingredient::reduceIngredients($wantedRecipesIngredients, []);
+            return Ingredient::getIngredientsToBuy($reducedIngredient, $userStock);
+        }
+        return [];
+        // self::getRightAmountOfIngredients($ingredients, $recipe['quantity']
+    }
+
+    /**
+     *retrieve all recipes owned by a particular user
+     */
+    public function findUserRecipes()
     {
         $pdo = Database::getPDO();
-        $sql = 'SELECT * FROM `users`';
-        $pdoStatement = $pdo->query($sql);
-        $results = $pdoStatement->fetchAll(PDO::FETCH_CLASS, static::class);
-        return $results;
+        $sql = "SELECT * FROM recipes WHERE user_id= :user_id";
+        $preparedQuery = $pdo->prepare($sql);
+        $preparedQuery->bindValue(':user_id', $this->id);
+        $preparedQuery->execute();
+        $recipes = $preparedQuery->fetchAll(PDO::FETCH_CLASS, static::class);
+        $result = [];
+        $userStock = Ingredient::getUserStock($this->id);
+        foreach ($recipes as $recipe) {
+            $result[] = Recipe::checkDoable($recipe, $userStock);
+        }
+        return $result;
     }
 
-    public static function createCustomError($error)
-    {
-        if ($error[0] == "23000") {
-            $arr = explode(" ", $error[2]);
-            $duplicate = $arr[count($arr) - 1];
-            // return $duplicate;
-            if ($duplicate === "'username'") {
-                return "Ce nom d'utilisateur est deja utilisé";
-            } else {
-                return "L'adresse Email est deja utilisée";
-            }
-        }
-    }
     /**
      * Get the value of username
      *
@@ -312,3 +393,17 @@ class User extends CoreModel implements JsonSerializable
         return $vars;
     }
 }
+
+ // public static function createCustomError($error)
+    // {
+    //     if ($error[0] == "23000") {
+    //         $arr = explode(" ", $error[2]);
+    //         $duplicate = $arr[count($arr) - 1];
+    //         // return $duplicate;
+    //         if ($duplicate === "'username'") {
+    //             return "Ce nom d'utilisateur est deja utilisé";
+    //         } else {
+    //             return "L'adresse Email est deja utilisée";
+    //         }
+    //     }
+    // }

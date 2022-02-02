@@ -23,8 +23,8 @@
             <td><?= $ingredient->getMinBuy() ?></td>
             <td><?= $ingredient->findUnity()->getUnity() ?></td>
             <td>
-              <a href="<?= $router->generate('admin-ingredients-list', ['id' => $ingredient->getId()]) ?>">edit</a>
-              <a href="<?= $router->generate('admin-ingredients-delete', ['id' => $ingredient->getId()]) ?>?token=<?= $token ?>">delete</a>
+              <a class="edit" href="<?= $router->generate('admin-ingredients-list', ['id' => $ingredient->getId()]) ?>"><i class="fa fa-pencil" aria-hidden="true"></i></a>
+              <a class="remove" href="<?= $router->generate('admin-ingredients-delete', ['id' => $ingredient->getId()]) ?>?token=<?= $token ?>">&times;</a>
             </td>
           </tr>
         <?php endforeach ?>

@@ -15,10 +15,10 @@ class RecipesController
   public function list()
   {
     $recipes = Recipe::findAll();
-    $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']); // tell the user if the recipes are doable
-    if ($granted['message'] === "success") {
+    $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']); // tell the user if the recipes are doable
+    if ($user) {
       $newRecipes = [];
-      $userStock = Ingredient::getUserStock($granted['userId']);
+      $userStock = Ingredient::getUserStock($user->getId());
       foreach ($recipes as $recipe) {
         $newRecipes[] = Recipe::checkDoable($recipe, $userStock);
       }
@@ -35,9 +35,9 @@ class RecipesController
   {
     $recipe = [];
     $id = $urlParam['id'];
-    $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']); // tell the user if the recipes are doable
-    if ($granted['message'] === "success") {
-      $recipe['infos'] = Recipe::checkDoable(Recipe::find($id), Ingredient::getUserStock($granted['userId']));
+    $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']); // tell the user if the recipes are doable
+    if ($user) {
+      $recipe['infos'] = Recipe::checkDoable(Recipe::find($id), Ingredient::getUserStock($user->getId()));
     } else {
       $recipe['infos'] = Recipe::find($id);
     }
@@ -56,9 +56,9 @@ class RecipesController
 
   public function deleteRecipeToBuy($urlParam)
   {
-    $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
-    if ($granted['message'] === "success") {
-      Recipe::deleteWantedRecipe($urlParam['id'], $granted['userId']);
+    $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
+    if ($user) {
+      Recipe::deleteWantedRecipe($urlParam['id'], $user->getId());
     } else {
       http_response_code(401);
       echo json_encode('vous devez vous reconnecter');
@@ -67,11 +67,11 @@ class RecipesController
 
   public function buyLessRecipe($urlParam)
   {
-    $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
-    if ($granted['message'] === "success") {
+    $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
+    if ($user) {
       $id = $urlParam['id'];
-      $wantedRecipe = Recipe::checkExist($id, $granted['userId']);
-      Recipe::removeWantedRecipe($wantedRecipe, $granted['userId']);
+      $wantedRecipe = Recipe::checkExist($id, $user->getId());
+      Recipe::removeWantedRecipe($wantedRecipe, $user->getId());
       // echo json_encode($error);
     } else {
       http_response_code(401);
@@ -81,59 +81,94 @@ class RecipesController
 
   public function buyRecipe($urlParam)
   {
-    $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
-    if ($granted['message'] === "success") {
+    $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
+    if ($user) {
       $id = $urlParam['id'];
-      Recipe::addWantedRecipe($id, $granted['userId']);
+      Recipe::addWantedRecipe($id, $user->getId());
     } else {
       http_response_code(401);
       echo json_encode('vous devez vous reconnecter');
     }
   }
 
+  public static function sanitizeData()
+  {
+    $data = [];
+    $data['name'] = filter_var($_POST['name'], FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+    $data['shared'] = filter_var($_POST['shared'], FILTER_VALIDATE_BOOLEAN);
+    $steps = json_decode($_POST['steps'], true);
+    $filteredSteps = [];
+    foreach ($steps as $stepText) {
+      $filteredStep = filter_var($stepText, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+      if (trim($filteredStep) !== "") {
+        $step = new Step();
+        $step->setText($stepText);
+        $filteredSteps[] = $step;
+      }
+    }
+    $data['steps'] = $filteredSteps;
+    $ingredients = json_decode($_POST['ingredients'], true);
+    $args = [
+      'id' => FILTER_VALIDATE_INT,
+      'quantity' => FILTER_VALIDATE_INT,
+    ];
+    $filteredIngredients = [];
+    foreach ($ingredients as $ingredient) {
+      $filteredIngredients[] = filter_var_array($ingredient, $args);
+    }
+    $data['ingredients'] = $filteredIngredients;
+    return $data;
+  }
 
+  public static function validateData($data)
+  {
+    if (trim($data['name']) === "") {
+      return "veuillez ajouter un nom à votre recette";
+    } else if (empty($data['ingredients'])) {
+      return "veuillez ajouter au moins un ingredient à votre recette";
+    } else if (empty($data['steps'])) {
+      return "veuillez ajouter au moins une étape à votre recette";
+    } else {
+      return "";
+    }
+  }
   /**
    * update a recipe
    */
   public function editRecipe($urlParam)
   {
-    $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
-    if ($granted['message'] === "success") {
-      //data validation
-      $name = filter_var($_POST['name'], FILTER_SANITIZE_STRING,FILTER_FLAG_NO_ENCODE_QUOTES);
-      $shared = filter_var($_POST['shared'], FILTER_VALIDATE_BOOLEAN);
-      $steps = json_decode($_POST['steps'], true);
-      $filteredSteps = [];
-      foreach ($steps as $step) {
-        $filteredSteps[] = filter_var($step, FILTER_SANITIZE_STRING,FILTER_FLAG_NO_ENCODE_QUOTES);
-      }
-      $ingredients = json_decode($_POST['ingredients'], true);
-      $args = [
-        'id' => FILTER_VALIDATE_INT,
-        'quantity' => FILTER_VALIDATE_INT,
-      ];
-      $filteredIngredients = [];
-      foreach ($ingredients as $ingredient) {
-        $filteredIngredients[] = filter_var_array($ingredient, $args);
-      }
-      $id = $urlParam['id'];
+    $id = $urlParam['id'];
+    $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
+    if ($user) {
       $recipe = Recipe::find($id); // find the desired recipe
-      if (!empty($_FILES['picture'])) { // remove the old picture from the folder to add the new one if the picture has been modified
-        unlink(__DIR__ . "/../../public/assets/recipes/" . $recipe->getImage());
-        $picName = Recipe::createPicture($name);
-      } else { // rename the picture to match an eventual new recipe name otherwise
-        $oldPicName = explode(".", $recipe->getImage());
-        $picName = $name . "." . end($oldPicName);
-        rename(__DIR__ . "/../../public/assets/recipes/" . $recipe->getImage(), __DIR__ . "/../../public/assets/recipes/" . $picName);
-      }  
       if (!empty($recipe)) { //if a recipe was found, set the modified values to it
-        $recipe->setName($name);
-        $recipe->setPublic($shared);
-        $recipe->updateRecipe($picName);
-        Step::deleteSteps($id); //remove all steps and ingredients linked to the recipe before adding the new ones
-        Ingredient::deleteRecipeIngredients($id);
-        Step::addRecipeSteps($filteredSteps, $id);
-        Ingredient::addRecipesIngredients($filteredIngredients, $id);
+        $data = self::sanitizeData();
+        $error = self::validateData($data);
+        if (empty($error)) {
+          if (!empty($_FILES['picture'])) { // remove the old picture from the folder to add the new one if the picture has been modified
+            unlink(__DIR__ . "/../../public/assets/recipes/" . $recipe->getImage());
+            $picName = Recipe::createPicture($data['name']);
+          } else { // rename the picture to match an eventual new recipe name otherwise
+            $oldPicName = explode(".", $recipe->getImage());
+            $picName = str_replace(' ', '-', $data['name']) . "-" . $user->getId() . "." . end($oldPicName);
+            rename(__DIR__ . "/../../public/assets/recipes/" . $recipe->getImage(), __DIR__ . "/../../public/assets/recipes/" . $picName);
+          }
+          $recipe->setName($data['name']);
+          $recipe->setPublic($data['shared'] ?? false);
+          $recipe->setImage($picName);
+          $recipe->updateRecipe();
+          $recipe->setIngredients($data['ingredients']);
+          Step::deleteSteps($id); //remove all steps and ingredients linked to the recipe before adding the new ones
+          Ingredient::deleteRecipeIngredients($id);
+          foreach ($data['steps'] as $step) {
+            $step->setRecipeId($id);
+            $step->insert();
+          }
+          Ingredient::addRecipesIngredients($recipe);
+        } else {
+          http_response_code(400);
+          echo json_encode($error);
+        }
       } else {
         http_response_code(404);
         echo json_encode("cette recette n'existe pas");
@@ -147,12 +182,13 @@ class RecipesController
   public function deleteRecipe($urlParam)
   {
     $id = $urlParam['id'];
-    $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
-    if ($granted['message'] === "success") {
+    $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
+    if ($user) {
       $recipe = Recipe::find($id);
+      unlink(__DIR__ . "/../../public/assets/recipes/" . $recipe->getImage());
       $response = $recipe->delete();
-      Step::deleteSteps($id);
-      Ingredient::deleteRecipeIngredients($id);
+      // Step::deleteSteps($id);
+      // Ingredient::deleteRecipeIngredients($id);
       if ($response) {
         http_response_code(204);
       } else {
@@ -165,35 +201,42 @@ class RecipesController
    */
   public function createRecipe()
   {
-    $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
-    if ($granted['message'] === "success") {
-      $name = filter_var($_POST['name'], FILTER_SANITIZE_STRING,FILTER_FLAG_NO_ENCODE_QUOTES);
-      $shared = filter_var($_POST['shared'], FILTER_VALIDATE_BOOLEAN);
-      $steps = json_decode($_POST['steps'], true);
-      $filteredSteps = [];
-      foreach ($steps as $step) {
-        $filteredSteps[] = filter_var($step, FILTER_SANITIZE_STRING,FILTER_FLAG_NO_ENCODE_QUOTES);
+    $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
+    if ($user) { // check auth
+      $data = self::sanitizeData();
+      $error = self::validateData($data);
+      if (empty($_FILES['picture'])) {
+        $error = "Veuillez ajouter une photo de votre recette";
       }
-      $ingredients = json_decode($_POST['ingredients'], true);
-      $args = [
-        'id' => FILTER_VALIDATE_INT,
-        'quantity' => FILTER_VALIDATE_INT,
-      ];
-      $filteredIngredients = [];
-      foreach ($ingredients as $ingredient) {
-        $filteredIngredients[] = filter_var_array($ingredient, $args);
-      }
-      $picName = Recipe::createPicture($name);
-      $response = Recipe::addRecipe($name, $shared, $filteredIngredients, $filteredSteps, $granted['userId'], $picName);
-      if (gettype($response) !== "string") {
-        http_response_code(500);
-        echo json_encode($response);
+      if (empty($error)) {
+        $picName = Recipe::createPicture($data['name'] . "-" . $user->getId());
+        $recipe = new Recipe();
+        $recipe->setName($data['name']);
+        $recipe->setPublic($data['shared'] ?? false);
+        $recipe->setUserId($user->getId());
+        $recipe->setImage($picName);
+        $recipe->setIngredients($data['ingredients']);
+        $recipeId = $recipe->insert();
+        if ($recipeId) {
+          $recipe->setId($recipeId);
+          $recipe->insertRecipesIngredients();
+          foreach ($data['steps'] as $step) {
+            $step->setRecipeId($recipeId);
+            $step->insert();
+          }
+          http_response_code(201);
+          echo json_encode($recipeId);
+        }else{
+          http_response_code(500);
+          echo json_encode('La recette n\'a pas pû être ajoutée, veuillez reéssayer plus tard' );
+        }
       } else {
-        echo json_encode($response);
+        http_response_code(400);
+        echo json_encode($error);
       }
     } else {
       http_response_code(401);
-      echo json_encode('vous devez vous reconnecter');
+      echo json_encode('Vous devez vous reconnecter');
     }
   }
   /**
@@ -201,9 +244,11 @@ class RecipesController
    */
   public function getMyRecipes()
   {
-    $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
-    if ($granted['message'] === "success") {
-      $myRecipes = Recipe::findUserRecipes($granted['userId']);
+    $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
+    if ($user) {
+      $myRecipes = $user->findUserRecipes();
+
+      // $myRecipes = Recipe::findUserRecipes($granted['userId']);
       echo json_encode($myRecipes);
     } else {
       http_response_code(401);
@@ -214,9 +259,9 @@ class RecipesController
   public function cookRecipe($urlParam)
   {
     $id = $urlParam['id'];
-    $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
-    if ($granted['message'] === "success") {
-      Ingredient::removeRecipeFromStock($granted['userId'], $id);
+    $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
+    if ($user) {
+      Ingredient::removeRecipeFromStock($user, $id);
     } else {
       http_response_code(401);
       echo json_encode('vous devez vous reconnecter');

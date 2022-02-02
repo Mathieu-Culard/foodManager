@@ -1,4 +1,4 @@
 <div>
-  <p>T'as pas le droit poto</p>
-  <a href="<?= $router->generate('admin-ingredients-list') ?>">Reviens au site</a>
+  <p>T'as pas le droit</p>
+  <a href="<?=  $this->redirectToRoute('admin-user-login'); ?>">Reviens au site</a>
 </div>

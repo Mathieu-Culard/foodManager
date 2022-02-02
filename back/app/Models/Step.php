@@ -13,6 +13,10 @@ class Step extends CoreModel implements JsonSerializable
    * @var string
    */
   private $text;
+  /**
+   * @var int
+   */
+  private $recipeId;
 
   /**
    * retrieve all steps linked to a recipe
@@ -32,34 +36,24 @@ class Step extends CoreModel implements JsonSerializable
   /**
    * add new steps to a recipe
    */
-  public static function addRecipeSteps($steps, $recipeId)
+  public function insert()
   {
-    $pdo = Database::getPDO();
-    $sql = "INSERT INTO steps (
-      text,
-      recipe_id
+      $pdo = Database::getPDO();
+      $sql = "INSERT INTO steps (
+        text,
+        recipe_id
       ) VALUES (
         :text,
         :recipe_id
         )
       ";
-    foreach ($steps as $step) {
-      if (trim($step) != "") {
-        try {
-          $statement = $pdo->prepare($sql);
-          $statement->bindValue(':text', $step);
-          $statement->bindValue(':recipe_id', $recipeId);
-          $statement->execute();
-        } catch (PDOException $e) {
-          return [
-            'error' => $e->errorInfo,
-            'model' => 'step'
-          ];
-        }
-      }
-    }
+      $statement = $pdo->prepare($sql);
+      $statement->bindValue(':text', $this->text);
+      $statement->bindValue(':recipe_id', $this->recipeId);
+      $statement->execute();
+      $insertedRows = $statement->rowCount();
+      return $insertedRows > 0 ;
   }
-
   /**
    *delete all step of a recipe 
    */
@@ -77,5 +71,53 @@ class Step extends CoreModel implements JsonSerializable
     $vars = get_object_vars($this);
 
     return $vars;
+  }
+
+  /**
+   * Get the value of text
+   *
+   * @return  string
+   */
+  public function getText()
+  {
+    return $this->text;
+  }
+
+  /**
+   * Set the value of text
+   *
+   * @param  string  $text
+   *
+   * @return  self
+   */
+  public function setText(string $text)
+  {
+    $this->text = $text;
+
+    return $this;
+  }
+
+  /**
+   * Get the value of recipeId
+   *
+   * @return  int
+   */
+  public function getRecipeId()
+  {
+    return $this->recipeId;
+  }
+
+  /**
+   * Set the value of recipeId
+   *
+   * @param  int  $recipeId
+   *
+   * @return  self
+   */
+  public function setRecipeId(int $recipeId)
+  {
+    $this->recipeId = $recipeId;
+
+    return $this;
   }
 }

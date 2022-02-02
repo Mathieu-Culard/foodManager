@@ -9,6 +9,10 @@
             <label for="pass">Mot de passe</label>
             <input class="login-form__input" type="password" id="pass" name="pass" placeholder="Mot de passe">
         </div>
+        <?php if (isset($error)) : ?>
+            <p><?= $error ?></p>
+        <?php endif ?>
         <button class="login-form__submit" type="submit">Se connecter</button>
     </form>
+
 </div>

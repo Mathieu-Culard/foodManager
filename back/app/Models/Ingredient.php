@@ -1,12 +1,5 @@
 <?php
 
-
-/**
- * SELECT i.name,i.image,i.category_id, ui.quantity FROM ingredients i
- *INNER JOIN users_ingredients ui ON ui.ingredient_id = i.id
- *WHERE ui.user_id = 16 AND ui.needed=0
- */
-
 namespace App\Models;
 
 use App\Utils\Database;
@@ -54,7 +47,7 @@ class Ingredient extends CoreModel  implements JsonSerializable
   public static function findAll()
   {
     $pdo = Database::getPDO();
-    $sql = "SELECT * FROM ingredients";
+    $sql = "SELECT * FROM ingredients ORDER BY name";
     $statement = $pdo->query($sql);
     $ingredients = $statement->fetchAll(PDO::FETCH_CLASS, static::class);
     return $ingredients;
@@ -177,36 +170,36 @@ class Ingredient extends CoreModel  implements JsonSerializable
     return $shoppingList;
   }
 
-  /**
-   * return users's ingredients sorted by food category
-   */
-  public static function findUserIngredients($userId, $identifier = 'stock')
-  {
-    $categories = self::getCategories();
-    $ingredients = [];
-    $needed = $identifier == 'shop' ? 1 : 0;
-    foreach ($categories as $category) {
+  // /**
+  //  * return users's ingredients sorted by food category
+  //  */
+  // public static function findUserIngredients($userId, $identifier = 'stock')
+  // {
+  //   $categories = self::getCategories();
+  //   $ingredients = [];
+  //   $needed = $identifier == 'shop' ? 1 : 0;
+  //   foreach ($categories as $category) {
 
-      $pdo = Database::getPDO();
-      $sql = "SELECT i.id, i.name,i.image, ui.quantity, u.unity, i.min_buy as minBuy
-        FROM ingredients i
-        INNER JOIN users_ingredients ui 
-        ON ui.ingredient_id = i.id
-        LEFT JOIN unity u 
-        ON u.id= i.unity_id
-        WHERE ui.user_id = :userId 
-        AND ui.needed= :needed
-        AND i.category_id= :categoryId";
-      $preparedQuery = $pdo->prepare($sql);
-      $preparedQuery->bindValue(':userId', $userId);
-      $preparedQuery->bindValue(':categoryId', $category['id']);
-      $preparedQuery->bindValue(':needed', $needed);
-      $preparedQuery->execute();
-      $categoryIngredients = $preparedQuery->fetchAll(PDO::FETCH_CLASS, static::class);
-      array_push($ingredients, ['name' => $category['name'], 'ingredients' => $categoryIngredients]);
-    }
-    return $ingredients;
-  }
+  //     $pdo = Database::getPDO();
+  //     $sql = "SELECT i.id, i.name,i.image, ui.quantity, u.unity, i.min_buy as minBuy
+  //       FROM ingredients i
+  //       INNER JOIN users_ingredients ui 
+  //       ON ui.ingredient_id = i.id
+  //       LEFT JOIN unity u 
+  //       ON u.id= i.unity_id
+  //       WHERE ui.user_id = :userId 
+  //       AND ui.needed= :needed
+  //       AND i.category_id= :categoryId";
+  //     $preparedQuery = $pdo->prepare($sql);
+  //     $preparedQuery->bindValue(':userId', $userId);
+  //     $preparedQuery->bindValue(':categoryId', $category['id']);
+  //     $preparedQuery->bindValue(':needed', $needed);
+  //     $preparedQuery->execute();
+  //     $categoryIngredients = $preparedQuery->fetchAll(PDO::FETCH_CLASS, static::class);
+  //     array_push($ingredients, ['name' => $category['name'], 'ingredients' => $categoryIngredients]);
+  //   }
+  //   return $ingredients;
+  // }
 
   /**
    * Combine ingredients from user stock and shopping list 
@@ -264,8 +257,8 @@ class Ingredient extends CoreModel  implements JsonSerializable
             $found = true;
             if ($ingredient['quantity'] > $userIngredient['quantity']) { // if the recipe require more than what the user owns
               // if ($ingredient['quantity'] - $userIngredient['quantity'])
-              if(!$ingredient['min_buy']){
-                $ingredient['min_buy']=1;
+              if (!$ingredient['min_buy']) {
+                $ingredient['min_buy'] = 1;
               }
               $ingredient['quantity'] = $ingredient['min_buy'] * ceil(($ingredient['quantity'] - $userIngredient['quantity']) / $ingredient['min_buy']);
               $ingredientsToBuy[] = $ingredient;
@@ -427,12 +420,11 @@ class Ingredient extends CoreModel  implements JsonSerializable
   /**
    * add various ingredients to a recipe
    */
-  public static function addRecipesIngredients($ingredients, $recipeId)
+  public static function addRecipesIngredients($recipe)
   {
     $pdo = Database::getPDO();
+    $ingredients = $recipe->getIngredients();
     foreach ($ingredients as $ingredient) {
-      // return $ingredient['quantity'];
-      // die;
       $sql = "INSERT INTO recipe_ingredients (
         ingredient_id,
         recipe_id,
@@ -443,18 +435,17 @@ class Ingredient extends CoreModel  implements JsonSerializable
           :quantity
           )
         ";
-      try {
-        $statement = $pdo->prepare($sql);
-        $statement->bindValue(':ingredient_id', $ingredient['id']);
-        $statement->bindValue(':recipe_id', $recipeId);
-        $statement->bindValue(':quantity', $ingredient['quantity']);
-        $statement->execute();
-      } catch (PDOException $e) {
-        return [
-          'error' => $e->errorInfo,
-        ];
+      $statement = $pdo->prepare($sql);
+      $statement->bindValue(':ingredient_id', $ingredient['id']);
+      $statement->bindValue(':recipe_id', $recipe->getId());
+      $statement->bindValue(':quantity', $ingredient['quantity']);
+      $statement->execute();
+      $insertedRow = $statement->rowCount();
+      if ($insertedRow = 0) {
+        return false;
       }
     }
+    return true;
   }
 
   /**
@@ -552,16 +543,16 @@ class Ingredient extends CoreModel  implements JsonSerializable
   /**
    * Remove recipe's ingredients that has been cook from user stock
    */
-  public static function removeRecipeFromStock($userId, $recipeId)
+  public static function removeRecipeFromStock($user, $recipeId)
   {
     $ingredients = Ingredient::findRecipeIngredients($recipeId);
-    $userStock = Ingredient::findUserIngredients($userId);
+    $userStock = $user->findUserIngredients();
     foreach ($ingredients as $ingredient) {
       foreach ($userStock as $cat) {
         foreach ($cat['ingredients'] as $stockIngredient) {
           if ($stockIngredient->getId() == $ingredient->getId()) {
             $quantity = get_object_vars($stockIngredient)['quantity'] - get_object_vars($ingredient)['quantity'];
-            self::updateStockIngredient($stockIngredient->getId(), $userId, $quantity, "0");
+            self::updateStockIngredient($stockIngredient->getId(), $user->getId(), $quantity, "0");
           }
         }
       }
@@ -684,9 +675,9 @@ class Ingredient extends CoreModel  implements JsonSerializable
   }
 
   /**
-   * Set the value of category_id
+   * Set the value of categoryId
    *
-   * @param  int  $category_id
+   * @param  int  $categoryId
    *
    * @return  self
    */

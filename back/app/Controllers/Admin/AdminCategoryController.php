@@ -8,15 +8,11 @@ class AdminCategoryController extends CoreController
 {
   public function list($urlParam)
   {
-    // $this->checkAuthorization();
     $currentCategory = [];
     if (!empty($urlParam['id'])) {
       $currentCategory = Category::find($urlParam['id']);
     }
-    // $id = $urlParam['id'];
     $categories = Category::findAll();
-    // $categories = Category::findAll();
-    // $units = Unity::findAll();
     $token = $this->generateCsrfToken();
     $this->show(
       'category/list',

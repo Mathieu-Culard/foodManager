@@ -33,35 +33,42 @@ class AdminUserController extends CoreController
   }
 
 
-  public function login()
+  public function login($urlParam)
   {
+    // $error="";
+    // if(isset($urlParam['e'])){
+    //   $error=$urlParam['e'];
+    // }
     $this->show(
-      'user/login'
+      'user/login',
+      // [
+      //   'error'=>$error,
+      // ]
     );
   }
 
   public function authenticate()
   {
-    // dump($_POST);
-    // On récupère les données du formulaire
-    $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_EMAIL);
+    $username = filter_input(INPUT_POST, 'username');
     $password = filter_input(INPUT_POST, 'pass');
-
     $user = User::find($username);
-    // dump($appUser);
-
-    // si l'email existe bien
     if (!empty($user)) {
       if (password_verify($password, $user->getPassword())) {
         $_SESSION['userId'] = $user->getId();
         $_SESSION['userRole'] = $user->getRole();
         $this->redirectToRoute('admin-ingredients-list');
       } else {
-        echo 'Password incorrect';
+        $error = "Mot de passe incorect";
       }
     } else {
-      echo 'Email inconnu';
+      $error = "Ce nom d'utilisateur n'existe pas";
     }
+    $this->show(
+      'user/login',
+      [
+        'error' => $error
+      ]
+    );
   }
 
   public function logout()

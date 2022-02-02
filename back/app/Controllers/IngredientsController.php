@@ -24,13 +24,13 @@ class IngredientsController
 
   public function updateStock($urlParam)
   {
-    $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
-    if ($granted['message'] === "success") {
+    $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
+    if ($user) {
       $data = json_decode(file_get_contents("php://input"));
       $newValue = filter_var($data->newValue, FILTER_VALIDATE_INT);
       $identifier = filter_var($data->identifier, FILTER_SANITIZE_STRING);
       $needed = $identifier === 'shop' ? 1 : 0;
-      $response = Ingredient::updateStockIngredient($urlParam['id'], $granted['userId'], $newValue, $needed);
+      $response = Ingredient::updateStockIngredient($urlParam['id'], $user->getId(), $newValue, $needed);
       if (!empty($response)) {
         http_response_code(500);
         echo json_encode('serveur en pls');
@@ -51,11 +51,11 @@ class IngredientsController
    */
   public function deleteFromStock($urlParam)
   {
-    $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
-    if ($granted['message'] === "success") {
+    $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
+    if ($user) {
       $identifier = filter_var($_GET['identifier'], FILTER_SANITIZE_STRING);
       $needed = $identifier === 'shop' ? 1 : 0;
-      Ingredient::deleteStockIngredient($urlParam['id'], $granted['userId'], $needed);
+      Ingredient::deleteStockIngredient($urlParam['id'], $user->getId(), $needed);
       if (!empty($response)) {
         http_response_code(500);
         echo json_encode('serveur en pls');
@@ -71,8 +71,8 @@ class IngredientsController
    */
   public function createStockIngredient()
   {
-    $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
-    if ($granted['message'] === "success") {
+    $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
+    if ($user) {
       $data = json_decode(file_get_contents("php://input"));
       $ingredients = [];
       $identifier = filter_var($data->identifier, FILTER_SANITIZE_STRING);
@@ -85,11 +85,11 @@ class IngredientsController
         $ingredients[] = filter_var_array(get_object_vars($ingredient), $args);
       }
       // $ingredients = $data->addStock;
-      $response = Ingredient::addToStock($ingredients, $granted['userId'], $needed);
+      $response = Ingredient::addToStock($ingredients, $user->getId(), $needed);
       echo json_encode($response);
     } else {
       http_response_code(401);
-      echo json_encode($granted['error']);
+      echo json_encode('vous devez vous reconnecter');
     }
   }
 
@@ -98,18 +98,17 @@ class IngredientsController
    */
   public function listUserIngredients()
   {
-    $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
-    if ($granted['message'] === "success") {
-      $data = json_decode(file_get_contents("php://input"));
+    $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
+    if ($user) {
       $identifier = filter_var($_GET['identifier'], FILTER_SANITIZE_STRING);
-      $ingredients = Ingredient::findUserIngredients($granted['userId'], $identifier);
+      $ingredients = $user->findUserIngredients($identifier);
       if ($identifier == 'shop') {
-        $result=Recipe::getWantedRecipes($granted['userId']);
+        $result = $user->getWantedRecipes();
         echo json_encode([
-          'recipes'=>$result,
-          'ingredients'=>$ingredients
+          'recipes' => $result,
+          'ingredients' => $ingredients
         ]);
-      }else{
+      } else {
         echo json_encode($ingredients);
       }
     } else {
@@ -123,30 +122,30 @@ class IngredientsController
    */
   public function validateShoppingList()
   {
-    $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
-    if ($granted['message'] === "success") {
+    $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
+    if ($user) {
       $data = json_decode(file_get_contents("php://input"));
       $recipes = $data->recipesShop;
-      $ingredients=[];
-      $recipesIds=[];
+      $ingredients = [];
+      $recipesIds = [];
       $args = [
         'id' => FILTER_VALIDATE_INT,
         'quantity' => FILTER_VALIDATE_INT,
       ];
-      foreach($recipes as $recipe){
-        foreach($recipe->ingredients as $ingredient){
-          $ingredients[]=filter_var_array(get_object_vars($ingredient),$args);
+      foreach ($recipes as $recipe) {
+        foreach ($recipe->ingredients as $ingredient) {
+          $ingredients[] = filter_var_array(get_object_vars($ingredient), $args);
         }
-        $recipesIds[]=filter_var($recipe->id,FILTER_VALIDATE_INT);
+        $recipesIds[] = filter_var($recipe->id, FILTER_VALIDATE_INT);
       }
-      $shoppingList = Ingredient::getShoppingList($granted['userId']);
-      Ingredient::addToStock($shoppingList, $granted['userId'], 0);
-      Ingredient::addToStock($ingredients,$granted['userId'], 0);
+      $shoppingList = Ingredient::getShoppingList($user->getId());
+      Ingredient::addToStock($shoppingList, $user->getId(), 0);
+      Ingredient::addToStock($ingredients, $user->getId(), 0);
       foreach ($shoppingList as $ingredient) {
-        Ingredient::deleteStockIngredient($ingredient['id'], $granted['userId'], 1);
+        Ingredient::deleteStockIngredient($ingredient['id'], $user->getId(), 1);
       }
-      foreach($recipesIds as $id){
-        Recipe::deleteWantedRecipe($id,$granted['userId']);
+      foreach ($recipesIds as $id) {
+        Recipe::deleteWantedRecipe($id, $user->getId());
       }
       // echo json_encode($shoppingList);
     } else {
