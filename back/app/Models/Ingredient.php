@@ -32,6 +32,11 @@ class Ingredient extends CoreModel  implements JsonSerializable
    * @var int
    */
   private $unity_id;
+  /**
+   * @var bool
+   */
+  private $is_tracked;
+
 
   public static function find($id)
   {
@@ -50,6 +55,7 @@ class Ingredient extends CoreModel  implements JsonSerializable
     $sql = "SELECT * FROM ingredients ORDER BY name";
     $statement = $pdo->query($sql);
     $ingredients = $statement->fetchAll(PDO::FETCH_CLASS, static::class);
+    // dump($ingredients);
     return $ingredients;
   }
 
@@ -82,7 +88,8 @@ class Ingredient extends CoreModel  implements JsonSerializable
             image = :image,
             min_buy = :min_buy,
             category_id = :category_id,
-            unity_id = :unity_id
+            unity_id = :unity_id,
+            is_tracked= :is_tracked
           WHERE id=:id
       ";
 
@@ -93,6 +100,7 @@ class Ingredient extends CoreModel  implements JsonSerializable
     $statement->bindValue(':min_buy',  $this->min_buy == 0 || $this->min_buy == 1 ? null :  $this->min_buy, PDO::PARAM_INT);
     $statement->bindValue(':category_id', $this->category_id, PDO::PARAM_INT);
     $statement->bindValue(':unity_id',  $this->unity_id == -1 ? null : $this->unity_id, PDO::PARAM_INT);
+    $statement->bindValue(':is_tracked', $this->is_tracked, PDO::PARAM_BOOL);
     $statement->execute();
 
     return ($statement->rowCount() > 0);
@@ -117,6 +125,7 @@ class Ingredient extends CoreModel  implements JsonSerializable
       :unity_id
       )
     ";
+
     $statement = $pdo->prepare($sql);
     $statement->bindValue(':name', $this->name, PDO::PARAM_STR);
     $statement->bindValue(':image', $this->image, PDO::PARAM_STR);
@@ -146,7 +155,7 @@ class Ingredient extends CoreModel  implements JsonSerializable
     $ingredients = [];
     $pdo = Database::getPDO();
     foreach ($categories as $category) {
-      $sql = "SELECT i.id, i.name,i.image,i.min_buy as minBuy, u.unity FROM ingredients i
+      $sql = "SELECT i.id, i.name,i.image,i.min_buy as minBuy, i.is_tracked, u.unity FROM ingredients i
       LEFT JOIN unity u ON u.id = i.unity_id
       WHERE i.category_id =" . $category['id'];
       $statement = $pdo->query($sql);
@@ -251,21 +260,23 @@ class Ingredient extends CoreModel  implements JsonSerializable
       // echo json_encode($recipe);
       foreach ($recipe['ingredients'] as $ingredient) { // for each ingredient needed by the recipe
         $found = false;
+        if (!$ingredient['min_buy']) {
+          $ingredient['min_buy'] = 1;
+        }
         // $ingredient = get_object_vars($ingredient);
         foreach ($userStock as $userIngredient) { // for each ingredients that the user owns in his stock and shopping list
           if ($ingredient['id'] == $userIngredient['ingredient_id']) { //add the desired ingredient only if the user doesn't already owns it in sufficient quantity
             $found = true;
             if ($ingredient['quantity'] > $userIngredient['quantity']) { // if the recipe require more than what the user owns
               // if ($ingredient['quantity'] - $userIngredient['quantity'])
-              if (!$ingredient['min_buy']) {
-                $ingredient['min_buy'] = 1;
-              }
+
               $ingredient['quantity'] = $ingredient['min_buy'] * ceil(($ingredient['quantity'] - $userIngredient['quantity']) / $ingredient['min_buy']);
               $ingredientsToBuy[] = $ingredient;
             }
           }
         }
         if (!$found) {
+          $ingredient['quantity'] = $ingredient['min_buy'] * ceil((abs($ingredient['quantity'])) / $ingredient['min_buy']);
           $ingredientsToBuy[] = $ingredient;
         }
       }
@@ -278,6 +289,8 @@ class Ingredient extends CoreModel  implements JsonSerializable
     }
     return $result;
   }
+
+
 
   public static function reduceIngredients($ingredients, $result)
   {
@@ -313,11 +326,12 @@ class Ingredient extends CoreModel  implements JsonSerializable
     $arr = [];
     foreach ($ingredients as $ingredient) {
       $ingredientArray = get_object_vars($ingredient);
-      if (!empty($ingredientArray['min_buy'])) {
-        $ingredientArray['quantity'] = $ingredientArray['min_buy'] * ceil(($ingredientArray['quantity'] * $multiplier) / $ingredientArray['min_buy']);
-      } else {
-        $ingredientArray['quantity'] *= $multiplier;
-      }
+      // if (!empty($ingredientArray['min_buy'])) {
+      //   $ingredientArray['quantity'] = $ingredientArray['min_buy'] * ceil((abs($ingredientArray['quantity']) * $multiplier) / $ingredientArray['min_buy']);
+      // } else {
+      // 
+      // }
+      $ingredientArray['quantity'] *= $multiplier;
       $arr[] = $ingredientArray;
     }
     // echo json_encode($test);
@@ -425,6 +439,13 @@ class Ingredient extends CoreModel  implements JsonSerializable
     $pdo = Database::getPDO();
     $ingredients = $recipe->getIngredients();
     foreach ($ingredients as $ingredient) {
+      echo 'lol';
+      echo $ingredient['quantity'];
+      $quantity = $ingredient['quantity'];
+      if ($quantity === 'mer') {
+        $quantity = '-1';
+        echo 'shleeeee';
+      }
       $sql = "INSERT INTO recipe_ingredients (
         ingredient_id,
         recipe_id,
@@ -438,7 +459,7 @@ class Ingredient extends CoreModel  implements JsonSerializable
       $statement = $pdo->prepare($sql);
       $statement->bindValue(':ingredient_id', $ingredient['id']);
       $statement->bindValue(':recipe_id', $recipe->getId());
-      $statement->bindValue(':quantity', $ingredient['quantity']);
+      $statement->bindValue(':quantity', $quantity);
       $statement->execute();
       $insertedRow = $statement->rowCount();
       if ($insertedRow = 0) {
@@ -551,8 +572,11 @@ class Ingredient extends CoreModel  implements JsonSerializable
       foreach ($userStock as $cat) {
         foreach ($cat['ingredients'] as $stockIngredient) {
           if ($stockIngredient->getId() == $ingredient->getId()) {
-            $quantity = get_object_vars($stockIngredient)['quantity'] - get_object_vars($ingredient)['quantity'];
-            self::updateStockIngredient($stockIngredient->getId(), $user->getId(), $quantity, "0");
+            echo 'lol';
+            if ($ingredient->quantity !== '-1') {
+              $quantity = get_object_vars($stockIngredient)['quantity'] - get_object_vars($ingredient)['quantity'];
+              self::updateStockIngredient($stockIngredient->getId(), $user->getId(), $quantity, "0");
+            }
           }
         }
       }
@@ -716,5 +740,29 @@ class Ingredient extends CoreModel  implements JsonSerializable
     $vars = get_object_vars($this);
 
     return $vars;
+  }
+
+  /**
+   * Get the value of isTracked
+   *
+   * @return  bool
+   */
+  public function getIsTracked()
+  {
+    return $this->is_tracked;
+  }
+
+  /**
+   * Set the value of isTracked
+   *
+   * @param  bool  $isTracked
+   *
+   * @return  self
+   */
+  public function setIsTracked(bool $isTracked)
+  {
+    $this->is_tracked = $isTracked;
+
+    return $this;
   }
 }

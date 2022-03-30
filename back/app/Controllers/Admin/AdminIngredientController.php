@@ -27,17 +27,18 @@ class AdminIngredientController extends CoreController
         'categories' => $categories,
         'units' => $units,
         'currentIngredient' => $currentIngredient,
-        'token'=>$token,
+        'token' => $token,
       ]
     );
   }
 
   public function createOrUpdate($urlParam)
   {
-    $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_SPECIAL_CHARS);
+    $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
     $minBuy = filter_input(INPUT_POST, 'min-buy', FILTER_VALIDATE_INT);
     $category = filter_input(INPUT_POST, 'category', FILTER_VALIDATE_INT);
     $unity = filter_input(INPUT_POST, 'unity', FILTER_VALIDATE_INT);
+    $tracked = !filter_input(INPUT_POST, 'tracked', FILTER_VALIDATE_BOOL);
     if (!empty($urlParam['id'])) {
       $ingredient = Ingredient::find($urlParam['id']);
     } else {
@@ -48,6 +49,7 @@ class AdminIngredientController extends CoreController
       $ingredient->setMinBuy($minBuy);
       $ingredient->setCategoryId($category);
       $ingredient->setUnityId($unity);
+      $ingredient->setIsTracked($tracked);
     }
     if (!empty($urlParam['id'])) { // update
       if (!empty($_FILES['picture']['name'])) { // remove the old picture from the folder to add the new one if the picture has been modified
@@ -55,7 +57,7 @@ class AdminIngredientController extends CoreController
         $picName = Ingredient::createPicture($name, 'ingredients');
       } else { // rename the picture to match an eventual new recipe name otherwise
         $oldPicName = explode(".", $ingredient->getImage());
-        $picName = str_replace(' ','-',$name) . "." . end($oldPicName);
+        $picName = str_replace(' ', '-', $name) . "." . end($oldPicName);
 
         rename(__DIR__ . "/../../../public/assets/ingredients/" . $ingredient->getImage(), __DIR__ . "/../../../public/assets/ingredients/" . $picName);
       }
@@ -71,15 +73,17 @@ class AdminIngredientController extends CoreController
       if ($ingredient->insert()) {
         $this->redirectToRoute('admin-ingredients-list');
       } else {
-        echo 'nanadd';
+        echo 'lol';
+        $this->redirectToRoute('admin-error-409');
       }
     }
   }
 
-  public function delete($urlParam){
-    $id=$urlParam['id'];
-    $ingredient=Ingredient::find($id);
-    if($ingredient->delete()){
+  public function delete($urlParam)
+  {
+    $id = $urlParam['id'];
+    $ingredient = Ingredient::find($id);
+    if ($ingredient->delete()) {
       unlink(__DIR__ . "/../../../public/assets/ingredients/" . $ingredient->getImage());
     }
     $this->redirectToRoute('admin-ingredients-list');

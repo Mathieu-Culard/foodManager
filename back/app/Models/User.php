@@ -79,7 +79,7 @@ class User extends CoreModel implements JsonSerializable
     public static function findbyId($id)
     {
         $pdo = Database::getPDO();
-        $sql = "SELECT * FROM `users` WHERE id = :id ";
+        $sql = "SELECT username, avatar, email, id, role FROM `users` WHERE id = :id ";
         $statement = $pdo->prepare($sql);
         $statement->bindValue(':id', $id, PDO::PARAM_INT);
         $statement->execute();
@@ -88,24 +88,24 @@ class User extends CoreModel implements JsonSerializable
     }
 
 
-    /**
-     * retrive the infos of the user that own a particular recipe
-     */
-    public static function findRecipeOwner($recipeId)
-    {
-        $pdo = Database::getPDO();
-        $sql = "SELECT *
-                FROM users u
-                INNER JOIN recipes r
-                ON r.user_id=u.id
-                WHERE r.id= :recipeId";
+    // /**
+    //  * retrive the infos of the user that own a particular recipe
+    //  */
+    // public static function findRecipeOwner($recipeId)
+    // {
+    //     $pdo = Database::getPDO();
+    //     $sql = "SELECT u.avatar, u.email, u.username, u.id
+    //             FROM users u
+    //             INNER JOIN recipes r
+    //             ON r.user_id=u.id
+    //             WHERE r.id= :recipeId";
 
-        $preparedQuery = $pdo->prepare($sql);
-        $preparedQuery->bindValue(':recipeId', $recipeId);
-        $preparedQuery->execute();
-        $steps = $preparedQuery->fetchObject(static::class);
-        return $steps;
-    }
+    //     $preparedQuery = $pdo->prepare($sql);
+    //     $preparedQuery->bindValue(':recipeId', $recipeId);
+    //     $preparedQuery->execute();
+    //     $steps = $preparedQuery->fetchObject(static::class);
+    //     return $steps;
+    // }
 
 
 
@@ -176,6 +176,7 @@ class User extends CoreModel implements JsonSerializable
     public function getConnectionInfo()
     {
         $jwt = $this->createToken();
+        $refreshToken = $this->createToken();
         $this->stock = $this->findUserIngredients();
         $this->shop = $this->findUserIngredients('shop');
         $this->recipesShop = $this->getWantedRecipes();
@@ -183,6 +184,7 @@ class User extends CoreModel implements JsonSerializable
         return ([
             'token' => $jwt,
             'user' => $this,
+            'refreshToken' => $refreshToken,
         ]);
     }
 
@@ -194,9 +196,9 @@ class User extends CoreModel implements JsonSerializable
         $configData = parse_ini_file(__DIR__ . '/../config.ini');
         $issuer_claim = "localhost:8000";
         $audience_claim = "localhost:8080";
-        $issuedat_claim = time(); 
-        $notbefore_claim = $issuedat_claim; 
-        $expire_claim = $issuedat_claim + 3600; 
+        $issuedat_claim = time();
+        $notbefore_claim = $issuedat_claim;
+        $expire_claim = $issuedat_claim + 3600;
         $token = [
             "iss" => $issuer_claim,
             "aud" => $audience_claim,
@@ -227,6 +229,16 @@ class User extends CoreModel implements JsonSerializable
             } catch (\Exception $e) {
                 return false;
             }
+        }
+    }
+    public static function checkRefreshToken($auth)
+    {
+        $configData = parse_ini_file(__DIR__ . '/../config.ini');
+        try {
+            $decoded = JWT::decode($auth, $configData['JWT_KEY'], array('HS256'));
+            return self::findbyId($decoded->data->id);
+        } catch (\Exception $e) {
+            return false;
         }
     }
 

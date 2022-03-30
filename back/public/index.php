@@ -7,7 +7,8 @@ ini_set('display_errors', 0);
 // header('Access-Control-Allow-Methods: GET, POST, PUT');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Credentials:true');
+    header('Access-Control-Allow-Origin: http://localhost:8080');
     header('Access-Control-Allow-Methods: POST, GET, DELETE, PUT, PATCH, OPTIONS');
     header('Access-Control-Allow-Headers: token, Content-Type, Authorization');
     header('Access-Control-Max-Age: 1728000');
@@ -17,6 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 header('Access-Control-Allow-Origin: http://localhost:8080');
+header('Access-Control-Allow-Credentials:true');
+
 // header('Content-Type: application/json');
 
 // $ret = [
@@ -34,6 +37,7 @@ use App\Controllers\UserController;
 use App\Controllers\RecipesController;
 use App\Controllers\IngredientsController;
 use App\Controllers\Admin\AdminCategoryController;
+use App\Controllers\Admin\AdminErrorController;
 
 session_start();
 
@@ -202,6 +206,16 @@ $router->map(
     'admin-user-logout'
 );
 
+$router->map(
+    'GET',
+    '/error409',
+    [
+        'method' => 'ckc',
+        'controller' => AdminErrorController::class
+    ],
+    'admin-error-409'
+);
+
 
 //=============CONNECTION============//
 $router->map(
@@ -224,6 +238,26 @@ $router->map(
     'login'
 );
 
+$router->map(
+    'GET',
+    '/api/logout',
+    [
+        'method' => 'logout',
+        'controller' => UserController::class,
+    ],
+    'logout'
+);
+
+$router->map(
+    'GET',
+    '/api/refreshtoken',
+    [
+        'method' => 'refreshToken',
+        'controller' => UserController::class,
+    ],
+    'refresh-token'
+);
+
 //=============RECIPES============//
 $router->map(
     'GET',
@@ -237,7 +271,7 @@ $router->map(
 
 $router->map(
     'GET',
-    '/api/recipe/[i:id]',
+    '/api/recipe/[edit|get:action]/[i:id]',
     [
         'method' => 'getRecipe',
         'controller' => RecipesController::class,
@@ -345,6 +379,16 @@ $router->map(
 
 
 //=============INGREDIENTS============//
+$router->map(
+    'GET',
+    '/api/send/shopping',
+    [
+        'method' => 'sendShoppingList',
+        'controller' => UserController::class,
+    ],
+    'send-shopping-list',
+);
+
 $router->map(
     'GET',
     '/api/ingredients',

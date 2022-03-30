@@ -9,4 +9,10 @@ class AdminErrorController extends CoreController
     header('HTTP/1.0 403 Forbidden');
     $this->show('error/err403');
   }
+
+  public function ckc()
+  {
+    header('HTTP/1.0 409 Conflict');
+    $this->show('error/err403');
+  }
 }

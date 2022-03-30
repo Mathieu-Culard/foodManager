@@ -35,17 +35,22 @@ class RecipesController
   {
     $recipe = [];
     $id = $urlParam['id'];
+    $action = $urlParam['action'];
     $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']); // tell the user if the recipes are doable
-    if ($user) {
-      $recipe['infos'] = Recipe::checkDoable(Recipe::find($id), Ingredient::getUserStock($user->getId()));
-    } else {
-      $recipe['infos'] = Recipe::find($id);
-    }
+    $recipe['infos'] = Recipe::find($id);
+    $recipe['owner'] = User::findbyId($recipe['infos']->user_id);
     if ($recipe['infos']) {
-      $recipe['ingredients'] = Ingredient::findRecipeIngredients($id);
-      $recipe['steps'] = Step::findRecipeSteps($id);
-      $recipe['owner'] = User::findRecipeOwner($id);
-      echo json_encode($recipe);
+      if (($action === 'edit' && $user->getId() == $recipe['infos']->user_id) || $action==='get') {
+        if ($user) {
+          $recipe['infos'] = Recipe::checkDoable(Recipe::find($id), Ingredient::getUserStock($user->getId()));
+        }
+        $recipe['ingredients'] = Ingredient::findRecipeIngredients($id);
+        $recipe['steps'] = Step::findRecipeSteps($id);
+        echo json_encode($recipe);
+      }else{
+        http_response_code(401);
+        echo json_encode("vous n'êtes pas autorisé à voir cette page");
+      }
     } else {
       http_response_code(404);
       echo json_encode("cette recette n'existe pas");
@@ -139,8 +144,8 @@ class RecipesController
   {
     $id = $urlParam['id'];
     $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
-    if ($user) {
-      $recipe = Recipe::find($id); // find the desired recipe
+    $recipe = Recipe::find($id); // find the desired recipe
+    if ($user->getId()==$recipe->user_id) {
       if (!empty($recipe)) { //if a recipe was found, set the modified values to it
         $data = self::sanitizeData();
         $error = self::validateData($data);
@@ -226,9 +231,9 @@ class RecipesController
           }
           http_response_code(201);
           echo json_encode($recipeId);
-        }else{
+        } else {
           http_response_code(500);
-          echo json_encode('La recette n\'a pas pû être ajoutée, veuillez reéssayer plus tard' );
+          echo json_encode('La recette n\'a pas pû être ajoutée, veuillez reéssayer plus tard');
         }
       } else {
         http_response_code(400);

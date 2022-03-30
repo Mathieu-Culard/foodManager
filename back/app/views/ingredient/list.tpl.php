@@ -10,6 +10,7 @@
           <th scope="col">Categorie</th>
           <th scope="col">Minimum achetable</th>
           <th scope="col">Unité</th>
+          <th scope="col">Suivi</th>
           <th scope="col"></th>
         </tr>
       </thead>
@@ -22,6 +23,7 @@
             <td><?= $ingredient->findCategory()->getName() ?></td>
             <td><?= $ingredient->getMinBuy() ?></td>
             <td><?= $ingredient->findUnity()->getUnity() ?></td>
+            <td><?= $ingredient->getIsTracked() == 1 ? 'oui' : 'non' ?></td>
             <td>
               <a class="edit" href="<?= $router->generate('admin-ingredients-list', ['id' => $ingredient->getId()]) ?>"><i class="fa fa-pencil" aria-hidden="true"></i></a>
               <a class="remove" href="<?= $router->generate('admin-ingredients-delete', ['id' => $ingredient->getId()]) ?>?token=<?= $token ?>">&times;</a>
@@ -41,15 +43,15 @@
       </div>
       <div class="add-form__item">
         <label for="picture">Image</label>
-        <input  type="file" name="picture" id="picture">
+        <input type="file" name="picture" id="picture">
       </div>
       <div class="add-form__item">
         <label for="min-buy">Minimum achetable</label>
-        <input  class="add-form__input" type="number" name="min-buy" id="min-buy" placeholder="quantité minimum achetable" value="<?= empty($currentIngredient) ? "" : $currentIngredient->getMinBuy() ?>">
+        <input class="add-form__input" type="number" name="min-buy" id="min-buy" placeholder="quantité minimum achetable" value="<?= empty($currentIngredient) ? "" : $currentIngredient->getMinBuy() ?>">
       </div>
       <div class="add-form__item">
         <label for="category">Categorie</label>
-        <select name="category" id="category"  class="add-form__input">
+        <select name="category" id="category" class="add-form__input">
           <?php foreach ($categories as $category) : ?>
             <?php if (!empty($currentIngredient) && $currentIngredient->getCategoryId() == $category->getId()) : ?>
               <option selected value="<?= $category->getId() ?>"><?= $category->getName() ?></option>
@@ -61,7 +63,7 @@
       </div>
       <div class="add-form__item">
         <label for="unity">Unité</label>
-        <select name="unity" id="unity"  class="add-form__input">
+        <select name="unity" id="unity" class="add-form__input">
           <option value="-1">Sans unité</option>
           <?php foreach ($units as $unity) : ?>
             <?php if (!empty($currentIngredient) && $currentIngredient->getUnityId() == $unity->getId()) : ?>
@@ -71,6 +73,13 @@
             <?php endif ?>
           <?php endforeach ?>
         </select>
+      </div>
+      <div class="add-form__item">
+        <label for="tracked">Suivi</label>
+        <div class="track-check">
+          <input name="tracked" type="checkbox" <?= (!empty($currentIngredient) && $currentIngredient->getIsTracked()) || empty($currentIngredient) ? '' : 'checked' ?>>
+          <p>sortir l'ingredient du suivi</p>
+        </div>
       </div>
       <button type="submit" class="add-form__submit"><?= empty($currentIngredient) ? "Valider" : "Modifier" ?></button>
     </form>

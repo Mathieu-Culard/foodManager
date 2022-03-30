@@ -59,6 +59,8 @@ class UserController
     if (!empty($user)) {
       if (password_verify($password, $user->getPassword())) {
         $loginInfo = $user->getConnectionInfo();
+        header('Set-Cookie: token=' . $loginInfo['refreshToken'] . '; Path=/');
+        unset($loginInfo['refreshToken']);
         echo json_encode($loginInfo);
       } else {
         http_response_code(401);
@@ -70,16 +72,31 @@ class UserController
     }
   }
 
-  // public function checkToken()
-  // {
-  //   $granted = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
-  //   $message = $granted["message"];
-  //   if ($message === "success") {
-  //     $users = User::findAll();
-  //     echo json_encode($users);
-  //   } else {
-  //     http_response_code(401);
-  //     echo json_encode($granted);
-  //   }
-  // }
+
+  public function refreshToken()
+  {
+    $user = User::checkRefreshToken($_COOKIE['token']);
+    unset($_COOKIE['token']);
+    if ($user) {
+      $loginInfo = $user->getConnectionInfo();
+      header('Set-Cookie: token=' . $loginInfo['refreshToken'] . '; Path=/');
+      unset($loginInfo['refreshToken']);
+      echo json_encode($loginInfo);
+    }
+  }
+
+  public function logout()
+  {
+      unset($_COOKIE['token']);
+      header('Set-Cookie: token=;Path=/');
+      echo json_encode('oui');
+  }
+
+  public function sendShoppingList(){
+    $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
+    if($user){
+      $val=mail('culard.mathieu@gmail.com','test','test');
+      echo json_encode($val);
+    }
+  }
 }
