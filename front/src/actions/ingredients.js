@@ -11,6 +11,17 @@ export const ADD_TO_RECIPE = 'ADD_TO_RECIPE';
 export const DELETE_RECIPE_INGREDIENT = 'DELETE_RECIPE_INGREDIENT';
 export const CHANGE_RECIPE_INGREDIENT_QUANTITY = 'CHANGE_RECIPE_INGREDIENT_QUANTITY';
 export const VALIDATE_SHOPPING_LIST = 'VALIDATE_SHOPPING_LIST';
+export const CHANGE_TRACK = 'CHANGE_TRACK';
+export const SEND_SHOPPING_LIST = 'SEND_SHOPPING_LIST';
+
+export const sendShoppingList = () => ({
+  type: SEND_SHOPPING_LIST,
+});
+
+export const changeTrack = (id) => ({
+  type: CHANGE_TRACK,
+  id,
+});
 
 export const validateShoppingList = () => ({
   type: VALIDATE_SHOPPING_LIST,

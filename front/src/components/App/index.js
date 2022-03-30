@@ -13,43 +13,84 @@ import Footer from 'src/containers/Footer';
 import StockPanel from 'src/containers/StockPanel';
 import ShopPanel from 'src/containers/ShopPanel';
 import AddRecipePage from 'src/containers/AddRecipePage';
+import Loader from 'src/components/Loader';
+import ErrorPage from 'src/containers/ErrorPage';
 // == Composant
-const App = ({ fetchIngredients, fetchPublicRecipes, isLogged, clearUserInfo }) => {
+const App = ({
+  fetchIngredients, fetchPublicRecipes, isLogged, clearUserInfo, refreshToken, isLoading,
+}) => {
   useEffect(() => {
+    refreshToken();
     fetchPublicRecipes();
     fetchIngredients();
-    if (!isLogged) {
-      clearUserInfo();
-    }
+
+    // if (!isLogged) {
+    //   clearUserInfo();
+    // }
   }, []);
 
   return (
     <div className="app">
-      <Header />
-      {isLogged && <StockPanel />}
-      {isLogged && <ShopPanel />}
-      <Switch>
-        <Route path="/recipe/:id">
-          <RecipePage />
-        </Route>
-        <Route path="/add-recipe">
-          <AddRecipePage />
-        </Route>
-        <Route path="/my-recipes/edit-recipe/:id">
-          <AddRecipePage />
-        </Route>
-        <Route path="/my-recipes">
-          <RecipesListPage />
-        </Route>
-        <Route path="/">
-          <RecipesListPage />
-        </Route>
-      </Switch>
-      {/* <h1>Composant : App</h1>
+      {isLoading && <Loader />}
+      {!isLoading && isLogged && (
+        <>
+          <Header />
+          <StockPanel />
+          <ShopPanel />
+          <Switch>
+            <Route path="/recipe/:id">
+              <RecipePage />
+            </Route>
+            <Route path="/add-recipe">
+              <AddRecipePage />
+            </Route>
+            <Route path="/my-recipes/edit-recipe/:id">
+              <AddRecipePage />
+            </Route>
+            <Route path="/my-recipes">
+              <RecipesListPage />
+            </Route>
+            <Route path="/error">
+              <ErrorPage />
+            </Route>
+            <Route path="/">
+              <RecipesListPage />
+            </Route>
+          </Switch>
+          {/* <h1>Composant : App</h1>
     <input type="button" value="checkToken" onClick={checkToken} /> */}
-      <ModalPanel />
-      <Snackbar />
-      <Footer />
+          <ModalPanel />
+          <Snackbar />
+          <Footer />
+        </>
+      )}
+      {!isLoading && !isLogged && (
+        <>
+          <Header />
+          <Switch>
+            <Route path="/recipe/:id">
+              <RecipePage />
+            </Route>
+            <Route path="/add-recipe">
+              <AddRecipePage />
+            </Route>
+            <Route path="/my-recipes/edit-recipe/:id">
+              <AddRecipePage />
+            </Route>
+            <Route path="/my-recipes">
+              <RecipesListPage />
+            </Route>
+            <Route path="/">
+              <RecipesListPage />
+            </Route>
+          </Switch>
+          {/* <h1>Composant : App</h1>
+    <input type="button" value="checkToken" onClick={checkToken} /> */}
+          <ModalPanel />
+          <Snackbar />
+          <Footer />
+        </>
+      )}
     </div>
   );
 };

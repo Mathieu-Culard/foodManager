@@ -1,15 +1,33 @@
 import axios from 'axios';
 import {
   SUBMIT_REGISTRATION, clearForm, SUBMIT_CONNECTION, CHECK_TOKEN, logIn, LOG_OUT, logOut,
+  REFRESH_TOKEN,
 } from 'src/actions/connection';
 import { fetchPublicRecipes } from 'src/actions/recipes';
 import { clearAddStock } from 'src/actions/ingredients';
 import { saveUserInfo, clearUserInfo, CLEAR_USER_INFO } from 'src/actions/user';
-import { CLOSE_MODAL, closeModal, openSnackbar } from 'src/actions/utils';
+import { CLOSE_MODAL, closeModal, openSnackbar,endLoad } from 'src/actions/utils';
 import { push } from 'connected-react-router';
 
 const ConnectionMiddleware = (store) => (next) => (action) => {
   switch (action.type) {
+    case REFRESH_TOKEN: {
+      next(action);
+      axios.get('http://localhost:8000/api/refreshtoken',
+        { withCredentials: true })
+        .then((response) => {
+          if (response.data) {
+            localStorage.setItem('jwt', response.data.token);
+            console.log(response.data);
+            console.log(localStorage.getItem('jwt'));
+            store.dispatch(fetchPublicRecipes());
+            store.dispatch(logIn());
+            store.dispatch(saveUserInfo(response.data.user));
+          }
+          store.dispatch(endLoad());
+        });
+      break;
+    }
     case CLEAR_USER_INFO: {
       localStorage.clear();
       store.dispatch(push('/'));
@@ -51,17 +69,18 @@ const ConnectionMiddleware = (store) => (next) => (action) => {
       axios.post('http://localhost:8000/api/login', {
         username,
         password,
-      }).then((response) => {
-        // console.log(response.data.user.stock[1]);
-        localStorage.setItem('jwt', response.data.token);
-        store.dispatch(closeModal());
-        store.dispatch(fetchPublicRecipes());
-        store.dispatch(logIn());
-        store.dispatch(saveUserInfo(response.data.user));
-        store.dispatch(openSnackbar('connexion effectuée', 'success'));
-      }).catch((error) => {
-        store.dispatch(openSnackbar(error.response.data, 'warning'));
-      });
+      }, { withCredentials: true })
+        .then((response) => {
+          // console.log(response.data.user.stock[1]);
+          localStorage.setItem('jwt', response.data.token);
+          store.dispatch(closeModal());
+          store.dispatch(fetchPublicRecipes());
+          store.dispatch(logIn());
+          store.dispatch(saveUserInfo(response.data.user));
+          store.dispatch(openSnackbar('connexion effectuée', 'success'));
+        }).catch((error) => {
+          store.dispatch(openSnackbar(error.response.data, 'warning'));
+        });
       next(action);
       break;
     }
@@ -85,9 +104,13 @@ const ConnectionMiddleware = (store) => (next) => (action) => {
       break;
     }
     case LOG_OUT: {
-      store.dispatch(clearUserInfo());
-      store.dispatch(fetchPublicRecipes());
-      store.dispatch(openSnackbar('deconnexion effectué', 'success'));
+      axios.get('http://localhost:8000/api/logout', { withCredentials: true })
+        .then(() => {
+          store.dispatch(clearUserInfo());
+          store.dispatch(fetchPublicRecipes());
+          store.dispatch(openSnackbar('deconnexion effectué', 'success'));
+        });
+
       next(action);
       break;
     }

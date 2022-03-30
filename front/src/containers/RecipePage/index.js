@@ -4,7 +4,8 @@ import { fetchRecipe, cookRecipe } from 'src/actions/recipes';
 
 const mapStateToProps = (state) => ({
   recipe: state.recipe.currentRecipe,
-  isLoading: state.utils.loading,
+  isLoading: state.recipe.isLoading,
+  stock: state.user.stock,
 });
 
 const mapDispatchToProps = (dispatch) => ({

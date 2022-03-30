@@ -18,9 +18,10 @@ import {
   BUY_LESS_RECIPE,
   DELETE_RECIPE_TO_BUY,
   COOK_RECIPE,
+  endRecipeLoad,
 } from 'src/actions/recipes';
 import { fetchUserStock } from 'src/actions/ingredients';
-import { endLoad, openSnackbar } from 'src/actions/utils';
+import { changeErrorMessage, openSnackbar } from 'src/actions/utils';
 
 const RecipesMiddleware = (store) => (next) => (action) => {
   switch (action.type) {
@@ -189,8 +190,8 @@ const RecipesMiddleware = (store) => (next) => (action) => {
           if (error.response.status === 401) {
             localStorage.clear();
             store.dispatch(logOut());
-            store.dispatch(openSnackbar(error.response.data, 'warning'));
           }
+          store.dispatch(openSnackbar(error.response.data, 'warning'));
         });
       next(action);
       break;
@@ -255,7 +256,7 @@ const RecipesMiddleware = (store) => (next) => (action) => {
     }
     case FETCH_RECIPE: {
       console.log(action.id);
-      axios.get(`http://localhost:8000/api/recipe/${action.id}`,
+      axios.get(`http://localhost:8000/api/recipe/${action.isEdit ? 'edit' : 'get'}/${action.id}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt')}`,
@@ -270,11 +271,13 @@ const RecipesMiddleware = (store) => (next) => (action) => {
           }
 
           console.log(response.data);
-          store.dispatch(endLoad());
+          store.dispatch(endRecipeLoad());
           console.log(response.data.steps[0].text);
         })
         .catch((error) => {
-          console.log(error);
+          console.log(typeof error.response.status);
+          store.dispatch(changeErrorMessage(error.response.data, error.response.status));
+          setTimeout(store.dispatch(push('/error'), 5000));
         });
       next(action);
       break;

@@ -51,6 +51,7 @@
       .ingredient {
         padding: .2rem;
         display: flex;
+        flex-direction: column;
         justify-content: space-between;
         border: 1px solid $darkColor;
         margin: 1rem;
@@ -62,15 +63,16 @@
 
         &__image {
           object-fit: cover;
-          width: 20%;
-          max-height: 50px;
+          width: 30%;
+          margin-right: .2rem;
+          height: 50px;
           border-radius: 10px;
         }
 
         &__content {
-          width: 80%;
+          width: 100%;
           height: 50px;
-          padding: 0.5rem;
+          padding: 0rem;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -80,13 +82,17 @@
           }
 
           &__input {
-            width: 50px;
+            width: 40px;
             border: none;
             font-family: $raleway;
 
           }
 
           &__unity {}
+        }
+
+        &__checkbox{
+          align-self: center;
         }
       }
     }

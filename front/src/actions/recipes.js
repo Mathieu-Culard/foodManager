@@ -20,6 +20,16 @@ export const BUY_RECIPE = 'BUY_RECIPE';
 export const BUY_LESS_RECIPE = 'BUY_LESS_RECIPE';
 export const DELETE_RECIPE_TO_BUY = 'DELETE_RECIPE_TO_BUY';
 export const COOK_RECIPE = 'COOK_RECIPE';
+export const LOAD_RECIPE = 'LOAD_RECIPE';
+export const END_RECIPE_LOAD = 'END_RECIPE_LOAD';
+
+export const loadRecipe = () => ({
+  type: LOAD_RECIPE,
+});
+
+export const endRecipeLoad = () => ({
+  type: END_RECIPE_LOAD,
+});
 
 export const cookRecipe = (recipeId) => ({
   type: COOK_RECIPE,

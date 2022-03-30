@@ -21,13 +21,16 @@ const AddRecipePage = ({
   openModal,
   addNewRecipe,
   fetchRecipe,
-  editRecipe
+  editRecipe,
+  clearForm,
 }) => {
   const { id } = useParams();
 
   useEffect(() => {
     if (id) {
       fetchRecipe(id, true);
+    }else{
+      clearForm();
     }
   }, []);
 

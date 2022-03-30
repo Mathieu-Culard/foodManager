@@ -5,9 +5,10 @@ import { useLocation, Link } from 'react-router-dom';
 import './recipesListPage.scss';
 
 const RecipesListPage = ({
-  recipes, userRecipes, fetchMyRecipes, fetchPublicRecipes, isLogged, deleteRecipe, buyRecipe
+  recipes, userRecipes, fetchMyRecipes, fetchPublicRecipes, isLogged, deleteRecipe, buyRecipe, loadRecipe,
 }) => {
   useEffect(() => {
+    loadRecipe();
     fetchPublicRecipes();
     if (isLogged) {
       fetchMyRecipes();

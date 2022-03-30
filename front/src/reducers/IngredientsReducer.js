@@ -1,4 +1,4 @@
-import { SAVE_INGREDIENTS, CHANGE_VALUE, CLEAR_ADD_STOCK } from 'src/actions/ingredients';
+import { SAVE_INGREDIENTS, CHANGE_VALUE, CLEAR_ADD_STOCK, CHANGE_TRACK } from 'src/actions/ingredients';
 import { addToStock } from 'src/utils';
 
 const initialState = {

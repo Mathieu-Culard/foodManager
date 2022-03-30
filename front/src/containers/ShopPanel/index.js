@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 import ShopPanel from 'src/components/ShopPanel';
 
 import { openPanel, openModal } from 'src/actions/utils';
-import { validateShoppingList } from 'src/actions/ingredients';
+import { validateShoppingList, sendShoppingList } from 'src/actions/ingredients';
 import { buyRecipe, buyLessRecipe, deleteRecipeToBuy } from 'src/actions/recipes';
 
 const mapStateToProps = (state) => ({
@@ -12,6 +12,7 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
+  send: () => dispatch(sendShoppingList()),
   open: (identifier) => dispatch(openPanel(identifier)),
   openModal: (title, component, use) => dispatch(openModal(title, component, use)),
   validate: () => dispatch(validateShoppingList()),

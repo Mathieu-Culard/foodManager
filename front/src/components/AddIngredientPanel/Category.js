@@ -1,7 +1,10 @@
 import React from 'react';
+import { getQuantity } from 'src/utils';
 import Ingredient from './Ingredient';
 
-const Category = ({ name, ingredients, changeValue, addedValues, type }) => (
+const Category = ({
+  name, ingredients, changeValue, addedValues, type, changeTrack, recipeIngredients,
+}) => (
   <div className="category">
     <h2 className="category__name">{name}</h2>
     <div className="category__content">
@@ -11,7 +14,9 @@ const Category = ({ name, ingredients, changeValue, addedValues, type }) => (
           {...ingredient}
           changeValue={changeValue}
           addedValues={addedValues}
+          changeTrack={changeTrack}
           type={type}
+          quantity={getQuantity(ingredient, recipeIngredients)}
         />
       ))}
     </div>
@@ -19,3 +24,18 @@ const Category = ({ name, ingredients, changeValue, addedValues, type }) => (
 );
 
 export default Category;
+{ /* let quantity;
+        for (let i = 0; i < recipeIngredients.length; i += 1) {
+          if (recipeIngredients[i].id === ingredient.id) {
+            return (
+              <Ingredient
+                key={ingredient.name}
+                {...ingredient}
+                changeValue={changeValue}
+                addedValues={addedValues}
+                changeTrack={changeTrack}
+                type={type}
+                {...recipeIngredients[i]}
+              />
+            );
+          } */ }

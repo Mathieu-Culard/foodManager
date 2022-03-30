@@ -3,7 +3,7 @@ import Category from './Category';
 import './addIngredientPanel.scss';
 
 const AddIngredientPanel = ({
-  ingredients, addToStock, addToRecipe, addedValues, changeValue, modalUse,
+  ingredients, addToStock, addToRecipe, addedValues, changeValue, modalUse, changeTrack, recipeIngredients,
 }) => {
   console.log(modalUse);
   const submit = () => {
@@ -29,6 +29,8 @@ const AddIngredientPanel = ({
             {...category}
             changeValue={changeValue}
             addedValues={addedValues}
+            changeTrack={changeTrack}
+            recipeIngredients={recipeIngredients}
             type={modalUse}
           />
         ))}

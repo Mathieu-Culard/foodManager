@@ -12,13 +12,27 @@ import {
   FETCH_USER_STOCK,
   saveUserStock,
   VALIDATE_SHOPPING_LIST,
+  SEND_SHOPPING_LIST,
 } from 'src/actions/ingredients';
 import { fetchPublicRecipes, fetchMyRecipes } from 'src/actions/recipes';
 
-
-
 const IngredientsMiddleware = (store) => (next) => (action) => {
   switch (action.type) {
+    case SEND_SHOPPING_LIST: {
+      axios.get('http://localhost:8000/api/send/shopping',
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+          },
+        })
+        .then((response) => {
+          console.log(response);
+        }).catch((error) => {
+          console.log(error);
+        });
+      next(action);
+      break;
+    }
     case ADD_TO_RECIPE:
       action.ingredientsList = store.getState().ingredients.ingredientsList;
       action.ingredientsToAdd = store.getState().ingredients.addStock;
@@ -27,8 +41,6 @@ const IngredientsMiddleware = (store) => (next) => (action) => {
       break;
     case ADD_TO_STOCK: {
       const { addStock } = store.getState().ingredients;
-      console.log('sheeeeh');
-      console.log(addStock);
       axios.post('http://localhost:8000/api/stock/add',
         {
           identifier: action.identifier,
@@ -47,8 +59,6 @@ const IngredientsMiddleware = (store) => (next) => (action) => {
           store.dispatch(closeModal());
           store.dispatch(fetchPublicRecipes());
           store.dispatch(fetchMyRecipes());
-          console.log('xxxxxxxxxxx');
-          console.log(response);
         })
         .catch((error) => {
           if (error.response.status === 401) {

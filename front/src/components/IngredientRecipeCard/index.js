@@ -10,7 +10,9 @@ const IngredientRecipeCard = ({
     <img src={`http://localhost:8000/assets/ingredients/${image}`} alt={name} className="ingredient-card__image" />
     {/* <div className="ingredient-card__infos"> */}
     <p className="ingredient-card__name">{name}</p>
-    <p className="ingredient-card__quantity">{`${quantity} ${unity ?? ''}`}</p>
+    {quantity !== '-1' && <p className="ingredient-card__quantity">{`${quantity} ${unity ?? ''}`}</p>}
+    {quantity === '-1' && <p className="ingredient-card__quantity">quantité au choix</p>}
+
     {/* </div> */}
   </div>
 );

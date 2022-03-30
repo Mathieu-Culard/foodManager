@@ -6,10 +6,15 @@ import {
   OPEN_PANEL,
   LOAD,
   END_LOAD,
+  CHANGE_ERROR_MESSAGE,
 } from 'src/actions/utils';
+import {
+  REFRESH_TOKEN,
+} from 'src/actions/connection';
 
 const initialState = {
-  loading: true,
+  isisLoading: true,
+
   modalComponent: '',
   modalTitle: '',
   modalUse: '',
@@ -19,10 +24,23 @@ const initialState = {
   snackbarSeverity: '',
   stockPanel: false,
   shopPanel: false,
+  errorMessage: '',
+  errorCode: '',
 };
 
 const utilsReducer = (state = initialState, action = {}) => {
   switch (action.type) {
+    case CHANGE_ERROR_MESSAGE:
+      return {
+        ...state,
+        errorMessage: action.message,
+        errorCode: action.code,
+      };
+    case REFRESH_TOKEN:
+      return {
+        ...state,
+        isLoading: true,
+      };
     case OPEN_SNACKBAR:
       return {
         ...state,
@@ -56,12 +74,12 @@ const utilsReducer = (state = initialState, action = {}) => {
     case LOAD:
       return {
         ...state,
-        loading: true,
+        isLoading: true,
       };
     case END_LOAD:
       return {
         ...state,
-        loading: false,
+        isLoading: false,
       };
     default: return state;
   }

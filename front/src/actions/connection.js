@@ -5,6 +5,7 @@ export const CLEAR_FORM = 'CLEAR_FORM';
 export const CHECK_TOKEN = 'CHECK_TOKEN';
 export const LOG_IN = 'LOG_IN';
 export const LOG_OUT = 'LOG_OUT';
+export const REFRESH_TOKEN = 'REFRESH_TOKEN';
 
 export const logOut = () => ({
   type: LOG_OUT,
@@ -34,4 +35,8 @@ export const submitConnection = () => ({
 
 export const clearForm = () => ({
   type: CLEAR_FORM,
+});
+
+export const refreshToken = () => ({
+  type: REFRESH_TOKEN,
 });

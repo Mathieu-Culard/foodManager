@@ -5,6 +5,13 @@ export const CLOSE_SNACKBAR = 'CLOSE_SNACKBAR';
 export const LOAD = 'LOAD';
 export const END_LOAD = 'END_LOAD';
 export const OPEN_PANEL = 'OPEN_PANEL';
+export const CHANGE_ERROR_MESSAGE = 'CHANGE_ERROR_MESSAGE';
+
+export const changeErrorMessage = (message, code) => ({
+  type: CHANGE_ERROR_MESSAGE,
+  message,
+  code,
+});
 
 export const endLoad = () => ({
   type: END_LOAD,

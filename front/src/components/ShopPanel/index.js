@@ -6,7 +6,7 @@ import './shopPanel.scss';
 import { test } from 'src/utils';
 
 const ShopPanel = ({
-  open, isOpen, shoppingList, openModal, validate, recipes, buyRecipe, buyLess, deleteRecipe,
+  open, isOpen, shoppingList, openModal, validate, recipes, buyRecipe, buyLess, deleteRecipe, send,
 }) => {
   useEffect(() => {
     // window.addEventListener('scroll', test);
@@ -19,10 +19,6 @@ const ShopPanel = ({
         <div className={`shop-panel__opener__arrow-${isOpen ? 'close' : 'open'}`} />
         <div className="shop-panel__opener__button" id="shopPanel" onClick={(e) => (open(e.target.id))} />
       </div>
-
-      {/* <a href="#" id="shopPanel" onClick={(e) => (open(e.target.id))} className="shop-panel__button">
-        >
-      </a> */}
       <div className="shop-panel__content">
         <div className="shop-panel__content__list">
           {recipes.map((recipe) => (
@@ -34,6 +30,8 @@ const ShopPanel = ({
         </div>
         <a href="#" className="shop-panel__content__add" onClick={() => openModal('Ajouter des ingredient à votre liste de courses', 'AddIngredientPanel', 'shop')}>Ajouter un aliment</a>
         <button className="shop-panel__content__validate" type="button" onClick={validate}>Valider la liste de courses</button>
+        <button className="shop-panel__content__validate" type="button" onClick={send}>Envoyer par e-mail</button>
+
       </div>
     </div>
   );

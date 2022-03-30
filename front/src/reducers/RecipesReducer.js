@@ -9,11 +9,24 @@ import {
   CHANGE_PICTURE,
   CLEAR_ADD_RECIPE_FORM,
   SET_INFO_FOR_EDIT,
+  END_RECIPE_LOAD,
+  LOAD_RECIPE,
 } from 'src/actions/recipes';
-import { ADD_TO_RECIPE, DELETE_RECIPE_INGREDIENT, CHANGE_RECIPE_INGREDIENT_QUANTITY } from 'src/actions/ingredients';
 import {
-  manageSteps, addStep, deleteStep, getRecipesIngredients, changeRecipeIngredientQuantity, getCurrentRecipe,
+  ADD_TO_RECIPE,
+  DELETE_RECIPE_INGREDIENT,
+  CHANGE_RECIPE_INGREDIENT_QUANTITY,
+  CHANGE_TRACK,
+} from 'src/actions/ingredients';
+import {
+  manageSteps,
+  addStep,
+  deleteStep,
+  getRecipesIngredients,
+  changeRecipeIngredientQuantity,
+  getCurrentRecipe,
 } from 'src/utils';
+
 
 const initialState = {
   name: '',
@@ -27,10 +40,23 @@ const initialState = {
   shared: false,
   recipesList: [],
   currentRecipe: {},
+  isLoading: true,
 };
 
 const recipesReducer = (state = initialState, action = {}) => {
   switch (action.type) {
+    case LOAD_RECIPE: {
+      return {
+        ...state,
+        isLoading: true,
+      };
+    }
+    case END_RECIPE_LOAD: {
+      return {
+        ...state,
+        isLoading: false,
+      };
+    }
     case SET_INFO_FOR_EDIT: {
       const { name, image } = action.recipe.infos;
       console.log(name);
@@ -61,6 +87,10 @@ const recipesReducer = (state = initialState, action = {}) => {
       return {
         ...state,
         ingredients: changeRecipeIngredientQuantity(state.ingredients, action.id, action.newValue),
+      };
+    case CHANGE_TRACK:
+      return {
+        ...state,
       };
     case DELETE_RECIPE_INGREDIENT:
       return {
@@ -100,7 +130,8 @@ const recipesReducer = (state = initialState, action = {}) => {
       return {
         ...state,
         recipesList: action.recipes,
-        isLoading: false,
+        // currentRecipe: getCurrentRecipe(action.recipes, state.currentRecipe.infos.id),
+        // isLoading: false,
       };
     case SAVE_CURRENT_RECIPE:
       return {

@@ -3,17 +3,18 @@ import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
 import './recipePage.scss';
 import IngredientCard from 'src/components/IngredientRecipeCard';
+import Loader from 'src/components/Loader';
 
-const RecipePage = ({ fetchRecipe, recipe, isLoading, cook }) => {
+const RecipePage = ({ fetchRecipe, recipe, isLoading, cook, stock }) => {
   const { id } = useParams();
   useEffect(() => {
     fetchRecipe(id, false);
-  }, []);
+  }, [stock]);
 
   return (
     <main className="recipe-page">
       {isLoading && (
-        <p>charge</p>)}
+        <Loader />)}
       {!isLoading && (
         <>
           <img src={`http://localhost:8000/assets/recipes/${recipe.infos.image}`} className="recipe-page__image" alt={`${recipe.infos.name}`} />

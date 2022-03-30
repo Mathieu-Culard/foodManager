@@ -11,6 +11,7 @@ import {
   addNewRecipe,
   fetchRecipe,
   editRecipe,
+  clearAddRecipeForm,
 } from 'src/actions/recipes';
 import { openModal } from 'src/actions/utils';
 
@@ -35,6 +36,7 @@ const mapDispatchToProps = (dispatch) => ({
   openModal: (component, title, use) => dispatch(openModal(component, title, use)),
   addNewRecipe: () => dispatch(addNewRecipe()),
   editRecipe: (id) => dispatch(editRecipe(id)),
+  clearForm: () => dispatch(clearAddRecipeForm()),
 });
 
 export default connect(

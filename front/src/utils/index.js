@@ -43,23 +43,27 @@ export const deleteIngredient = (stock, id) => {
 };
 
 export const addToStock = (addStock, id, quantity) => {
-  const newAddStock = [...addStock];
-  const currentItem = newAddStock.find((item) => item.id === id);
-  if (currentItem) {
-    currentItem.quantity = quantity;
-    if (quantity === '0') {
-      const index = newAddStock.map((ingredient) => ingredient.id).indexOf(id);
-      newAddStock.splice(index, 1);
+  if (parseInt(quantity, 10) >= -1) {
+    const newAddStock = [...addStock];
+    const currentItem = newAddStock.find((item) => item.id === id);
+    if (currentItem) {
+      currentItem.quantity = quantity;
+      if (quantity === '0') {
+        const index = newAddStock.map((ingredient) => ingredient.id).indexOf(id);
+        newAddStock.splice(index, 1);
+      }
     }
+    else {
+      newAddStock.push({
+        id,
+        quantity,
+      });
+    }
+    return newAddStock;
   }
-  else {
-    newAddStock.push({
-      id,
-      quantity,
-    });
-  }
-  return newAddStock;
+  return addStock;
 };
+
 export const addStep = (steps) => {
   const stepsList = [...steps];
   stepsList.push({
@@ -90,15 +94,26 @@ export const deleteStep = (steps, id) => {
     text: step.text,
   }));
 };
-
+/**
+ * 
+ * @param {Array} ingredientsList all available ingrédient
+ * @param {Array} addStock ingredients to add
+ * @param {Array} addedIngredients recipe's ingredients
+ */
 export const getRecipesIngredients = (ingredientsList, addStock, addedIngredients) => {
   const ingredients = [...addedIngredients];
-  for (let i = 0; i < addedIngredients.length; i += 1) {
+  for (let i = 0; i < ingredients.length; i += 1) {
     for (let j = 0; j < addStock.length; j += 1) {
-      if (addedIngredients[i].id === addStock[j].id) {
-        addedIngredients[i].quantity = parseInt(addStock[j].quantity, 10)
-          + parseInt(addedIngredients[i].quantity, 10);
+      if (ingredients[i].id === addStock[j].id) {
+        if (parseInt(ingredients[i].quantity, 10) === -1) {
+          ingredients[i].quantity = 0;
+        }
+        ingredients[i].quantity = parseInt(addStock[j].quantity, 10)
+          + parseInt(ingredients[i].quantity, 10);
         addStock.splice(j, 1);
+        if (ingredients[i].quantity === 0) {
+          ingredients.splice(i, 1);
+        }
       }
     }
   }
@@ -114,6 +129,15 @@ export const getRecipesIngredients = (ingredientsList, addStock, addedIngredient
   }
   console.log(ingredients);
   return ingredients;
+};
+
+export const getQuantity = (ingredient, recipesIngredients) => {
+  for (let i = 0; i < recipesIngredients.length; i += 1) {
+    if (ingredient.id === recipesIngredients[i].id) {
+      return recipesIngredients[i].quantity;
+    }
+  }
+  return 0;
 };
 
 export const test = () => {

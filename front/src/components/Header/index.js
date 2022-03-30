@@ -41,7 +41,7 @@ const Header = ({ openModal, isLogged, logOut }) => {
         </nav>
       )}
       <Link to="/">
-        <h1 className={`header__title ${location.pathname==='/' ? 'low' : 'high'}`}>food manager</h1>
+        <h1 className={`header__title ${location.pathname === '/' ? 'low' : 'high'}`}>food manager</h1>
       </Link>
       {location.pathname === '/' && (
         <p className="header__desc">Le site de recette <br /> qui crée votre liste de courses</p>
