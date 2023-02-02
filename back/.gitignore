@@ -3,3 +3,8 @@ vendor
 
 # Fichier de config
 app/config.ini
+
+#image
+public/assets/ingredients/*
+public/assets/recipes/*
+public/assets/avatars/*
