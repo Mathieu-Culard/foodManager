@@ -38,16 +38,16 @@ class RecipesController
     $action = $urlParam['action'];
     $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']); // tell the user if the recipes are doable
     $recipe['infos'] = Recipe::find($id);
-    $recipe['owner'] = User::findbyId($recipe['infos']->user_id);
+    $recipe['owner'] = User::findbyId($recipe['infos']->getUserId());
     if ($recipe['infos']) {
-      if (($action === 'edit' && $user->getId() == $recipe['infos']->user_id) || $action==='get') {
+      if (($action === 'edit' && $user->getId() == $recipe['infos']->getUserId()) || $action === 'get') {
         if ($user) {
           $recipe['infos'] = Recipe::checkDoable(Recipe::find($id), Ingredient::getUserStock($user->getId()));
         }
         $recipe['ingredients'] = Ingredient::findRecipeIngredients($id);
         $recipe['steps'] = Step::findRecipeSteps($id);
         echo json_encode($recipe);
-      }else{
+      } else {
         http_response_code(401);
         echo json_encode("vous n'êtes pas autorisé à voir cette page");
       }
@@ -145,7 +145,7 @@ class RecipesController
     $id = $urlParam['id'];
     $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
     $recipe = Recipe::find($id); // find the desired recipe
-    if ($user->getId()==$recipe->user_id) {
+    if ($user->getId() == $recipe->getUserId()) {
       if (!empty($recipe)) { //if a recipe was found, set the modified values to it
         $data = self::sanitizeData();
         $error = self::validateData($data);
@@ -190,7 +190,7 @@ class RecipesController
     $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
     if ($user) {
       $recipe = Recipe::find($id);
-      unlink(__DIR__ . "/../../public/assets/recipes/" . $recipe->getImage());
+      // unlink(__DIR__ . "/../../public/assets/recipes/" . $recipe->getImage());
       $response = $recipe->delete();
       // Step::deleteSteps($id);
       // Ingredient::deleteRecipeIngredients($id);
@@ -227,10 +227,15 @@ class RecipesController
           $recipe->insertRecipesIngredients();
           foreach ($data['steps'] as $step) {
             $step->setRecipeId($recipeId);
-            $step->insert();
+            $response = $step->insert();
+            if (!$response) { // if a step wont insert the recipe can't be added 
+              $recipe->delete();
+              break;
+            }
           }
-          http_response_code(201);
-          echo json_encode($recipeId);
+          $userStock = Ingredient::getUserStock($user->getId());
+          http_response_code(200);
+          echo json_encode($recipe::checkDoable($recipe, $userStock));
         } else {
           http_response_code(500);
           echo json_encode('La recette n\'a pas pû être ajoutée, veuillez reéssayer plus tard');

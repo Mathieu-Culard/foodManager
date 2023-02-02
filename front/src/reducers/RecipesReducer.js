@@ -11,6 +11,8 @@ import {
   SET_INFO_FOR_EDIT,
   END_RECIPE_LOAD,
   LOAD_RECIPE,
+  DELETE_RECIPE,
+  ADD_RECIPE,
 } from 'src/actions/recipes';
 import {
   ADD_TO_RECIPE,
@@ -24,7 +26,7 @@ import {
   deleteStep,
   getRecipesIngredients,
   changeRecipeIngredientQuantity,
-  getCurrentRecipe,
+  // getCurrentRecipe,
 } from 'src/utils';
 
 
@@ -45,12 +47,24 @@ const initialState = {
 
 const recipesReducer = (state = initialState, action = {}) => {
   switch (action.type) {
-    case LOAD_RECIPE: {
+    case ADD_RECIPE: {
+      return {
+        ...state,
+        recipesList: action.recipe.public
+          ? [...state.recipesList, action.recipe] : [...state.recipesList],
+      };
+    }
+    case DELETE_RECIPE: {
+      return {
+        ...state,
+        recipesList: state.recipesList.filter((item) => item.id !== action.id),
+      };
+    }
+    case LOAD_RECIPE:
       return {
         ...state,
         isLoading: true,
       };
-    }
     case END_RECIPE_LOAD: {
       return {
         ...state,

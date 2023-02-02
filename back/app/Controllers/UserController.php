@@ -95,8 +95,26 @@ class UserController
   public function sendShoppingList(){
     $user = User::checkToken($_SERVER['HTTP_AUTHORIZATION']);
     if($user){
-      $val=mail('culard.mathieu@gmail.com','test','test');
-      echo json_encode($val);
+      $headers="Content-Type: text/plain; charset=utf-8\r\n";
+      $headers ="From: projetfoodmanager@gmail.com";
+      $data = json_decode(file_get_contents("php://input"));
+      $ingredientsList=[];
+      foreach($data->recipesShop as $recipe){
+        foreach($recipe->ingredients as $ingredient){
+          $ingredientsList[]=$ingredient->name." - ".$ingredient->quantity." ".$ingredient->unity;
+        }
+      }
+      foreach($data->shop as $category){
+        foreach($category->ingredients as $ingredient){
+          $ingredientsList[]=$ingredient->name." - ".$ingredient->quantity." ".$ingredient->unity;
+        }
+      }
+
+      if(mail($user->getEmail(),'Liste de courses',implode("\r\n",$ingredientsList),$headers)){
+        echo json_encode('yep');
+      }else{
+        echo json_encode('nop');
+      }
     }
   }
 }

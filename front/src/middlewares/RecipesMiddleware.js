@@ -19,6 +19,7 @@ import {
   DELETE_RECIPE_TO_BUY,
   COOK_RECIPE,
   endRecipeLoad,
+  addRecipe,
 } from 'src/actions/recipes';
 import { fetchUserStock } from 'src/actions/ingredients';
 import { changeErrorMessage, openSnackbar } from 'src/actions/utils';
@@ -119,7 +120,8 @@ const RecipesMiddleware = (store) => (next) => (action) => {
         })
         .then((response) => {
           console.log(response.data);
-          store.dispatch(fetchMyRecipes());
+          next(action);
+          // store.dispatch(fetchMyRecipes());
         })
         .catch((error) => {
           if (error.response.status === 401) {
@@ -128,7 +130,6 @@ const RecipesMiddleware = (store) => (next) => (action) => {
             store.dispatch(openSnackbar(error.response.data, 'warning'));
           }
         });
-      next(action);
       break;
     }
     case FETCH_MY_RECIPES: {
@@ -185,7 +186,6 @@ const RecipesMiddleware = (store) => (next) => (action) => {
           console.log(response);
           store.dispatch(clearAddRecipeForm());
           store.dispatch(push('/my-recipes'));
-          console.log('mais dou ?');
         }).catch((error) => {
           if (error.response.status === 401) {
             localStorage.clear();
@@ -226,6 +226,7 @@ const RecipesMiddleware = (store) => (next) => (action) => {
         .then((response) => {
           store.dispatch(clearAddRecipeForm());
           store.dispatch(push('/my-recipes'));
+          store.dispatch(addRecipe(response.data));
         }).catch((error) => {
           if (error.response.status === 401) {
             localStorage.clear();

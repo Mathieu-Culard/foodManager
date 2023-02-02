@@ -74,7 +74,7 @@ const ConnectionMiddleware = (store) => (next) => (action) => {
           // console.log(response.data.user.stock[1]);
           localStorage.setItem('jwt', response.data.token);
           store.dispatch(closeModal());
-          store.dispatch(fetchPublicRecipes());
+          // store.dispatch(fetchPublicRecipes());
           store.dispatch(logIn());
           store.dispatch(saveUserInfo(response.data.user));
           store.dispatch(openSnackbar('connexion effectuée', 'success'));

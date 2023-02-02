@@ -1,4 +1,4 @@
-import ShopPanel from "../components/ShopPanel";
+// import ShopPanel from "../components/ShopPanel";
 
 export const updateStock = (stock, id, newValue) => {
   const newStock = stock.map((cat) => {
@@ -17,12 +17,12 @@ export const updateStock = (stock, id, newValue) => {
   return newStock;
 };
 
-export const getCurrentRecipe = (recipes, id) => {
-  const currentRecipe = recipes.filter((recipe) => (
-    recipe.id === parseInt(id, 10)
-  ));
-  return currentRecipe[0];
-};
+// export const getCurrentRecipe = (recipes, id) => {
+//   const currentRecipe = recipes.filter((recipe) => (
+//     recipe.id === parseInt(id, 10)
+//   ));
+//   return currentRecipe[0];
+// };
 
 export const changeRecipeIngredientQuantity = (ingredients, id, newValue) => {
   const newIngredients = [...ingredients];

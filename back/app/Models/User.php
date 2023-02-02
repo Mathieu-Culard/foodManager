@@ -311,7 +311,7 @@ class User extends CoreModel implements JsonSerializable
     public function findUserRecipes()
     {
         $pdo = Database::getPDO();
-        $sql = "SELECT * FROM recipes WHERE user_id= :user_id";
+        $sql = "SELECT `id`, `name`, `image`, `public`, `user_id` as userId FROM recipes WHERE user_id= :user_id";
         $preparedQuery = $pdo->prepare($sql);
         $preparedQuery->bindValue(':user_id', $this->id);
         $preparedQuery->execute();

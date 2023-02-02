@@ -11,11 +11,11 @@ class CoreModel
   /**
    * @var string
    */
-  protected $created_at;
+  protected $createdAt;
   /**
    * @var string
    */
-  protected $updated_at;
+  protected $updatedAt;
 
 
   // public function save() {
@@ -59,7 +59,7 @@ class CoreModel
    */
   public function getCreatedAt(): string
   {
-    return $this->created_at;
+    return $this->createdAt;
   }
 
   /**
@@ -69,7 +69,7 @@ class CoreModel
    */
   public function getUpdatedAt(): string
   {
-    return $this->updated_at;
+    return $this->updatedAt;
   }
 
   /**

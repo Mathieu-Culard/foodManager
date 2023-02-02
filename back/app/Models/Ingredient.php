@@ -23,25 +23,25 @@ class Ingredient extends CoreModel  implements JsonSerializable
   /**
    * @var int
    */
-  private $min_buy;
+  private $minBuy;
   /**
    * @var int
    */
-  private $category_id;
+  private $categoryId;
   /**
    * @var int
    */
-  private $unity_id;
+  private $unityId;
   /**
    * @var bool
    */
-  private $is_tracked;
+  private $isTracked;
 
 
   public static function find($id)
   {
     $pdo = Database::getPDO();
-    $sql = "SELECT * FROM ingredients WHERE id = :id";
+    $sql = "SELECT `id`, `name`, `image`, `min_buy` as minBuy, `category_id` as categoryId, `unity_id` as unityId, `is_tracked` as isTracked FROM ingredients WHERE id = :id";
     $statement = $pdo->prepare($sql);
     $statement->bindValue(":id", $id, PDO::PARAM_INT);
     $statement->execute();
@@ -52,7 +52,7 @@ class Ingredient extends CoreModel  implements JsonSerializable
   public static function findAll()
   {
     $pdo = Database::getPDO();
-    $sql = "SELECT * FROM ingredients ORDER BY name";
+    $sql = "SELECT `id`, `name`, `image`, `min_buy` as minBuy, `category_id` as categoryId, `unity_id` as unityId, `is_tracked` as isTracked FROM ingredients ORDER BY name";
     $statement = $pdo->query($sql);
     $ingredients = $statement->fetchAll(PDO::FETCH_CLASS, static::class);
     // dump($ingredients);
@@ -61,7 +61,7 @@ class Ingredient extends CoreModel  implements JsonSerializable
 
   public function findCategory()
   {
-    $id = $this->category_id;
+    $id = $this->categoryId;
     $category = Category::find($id);
     if (!$category) {
       return new Category();
@@ -71,7 +71,7 @@ class Ingredient extends CoreModel  implements JsonSerializable
 
   public function findUnity()
   {
-    $id = $this->unity_id;
+    $id = $this->unityId;
     $unity = Unity::find($id);
     if (!$unity) {
       return new Unity();
@@ -97,10 +97,10 @@ class Ingredient extends CoreModel  implements JsonSerializable
     $statement->bindValue(':id', $this->id, PDO::PARAM_INT);
     $statement->bindValue(':name', $this->name, PDO::PARAM_STR);
     $statement->bindValue(':image', $this->image, PDO::PARAM_STR);
-    $statement->bindValue(':min_buy',  $this->min_buy == 0 || $this->min_buy == 1 ? null :  $this->min_buy, PDO::PARAM_INT);
-    $statement->bindValue(':category_id', $this->category_id, PDO::PARAM_INT);
-    $statement->bindValue(':unity_id',  $this->unity_id == -1 ? null : $this->unity_id, PDO::PARAM_INT);
-    $statement->bindValue(':is_tracked', $this->is_tracked, PDO::PARAM_BOOL);
+    $statement->bindValue(':min_buy',  $this->minBuy == 0 || $this->minBuy == 1 ? null :  $this->minBuy, PDO::PARAM_INT);
+    $statement->bindValue(':category_id', $this->categoryId, PDO::PARAM_INT);
+    $statement->bindValue(':unity_id',  $this->unityId == -1 ? null : $this->unityId, PDO::PARAM_INT);
+    $statement->bindValue(':is_tracked', $this->isTracked, PDO::PARAM_BOOL);
     $statement->execute();
 
     return ($statement->rowCount() > 0);
@@ -129,9 +129,9 @@ class Ingredient extends CoreModel  implements JsonSerializable
     $statement = $pdo->prepare($sql);
     $statement->bindValue(':name', $this->name, PDO::PARAM_STR);
     $statement->bindValue(':image', $this->image, PDO::PARAM_STR);
-    $statement->bindValue(':min_buy', $this->min_buy == 0 || $this->min_buy == 1 ? null :  $this->min_buy, PDO::PARAM_INT);
-    $statement->bindValue(':category_id', $this->category_id, PDO::PARAM_INT);
-    $statement->bindValue(':unity_id', $this->unity_id == -1 ? null : $this->unity_id, PDO::PARAM_INT);
+    $statement->bindValue(':min_buy', $this->minBuy == 0 || $this->minBuy == 1 ? null :  $this->minBuy, PDO::PARAM_INT);
+    $statement->bindValue(':category_id', $this->categoryId, PDO::PARAM_INT);
+    $statement->bindValue(':unity_id', $this->unityId == -1 ? null : $this->unityId, PDO::PARAM_INT);
     $statement->execute();
     return ($statement->rowCount() > 0);
   }
@@ -155,7 +155,7 @@ class Ingredient extends CoreModel  implements JsonSerializable
     $ingredients = [];
     $pdo = Database::getPDO();
     foreach ($categories as $category) {
-      $sql = "SELECT i.id, i.name,i.image,i.min_buy as minBuy, i.is_tracked, u.unity FROM ingredients i
+      $sql = "SELECT i.id, i.name,i.image,i.min_buy as minBuy, i.is_tracked as isTracked, u.unity FROM ingredients i
       LEFT JOIN unity u ON u.id = i.unity_id
       WHERE i.category_id =" . $category['id'];
       $statement = $pdo->query($sql);
@@ -260,8 +260,8 @@ class Ingredient extends CoreModel  implements JsonSerializable
       // echo json_encode($recipe);
       foreach ($recipe['ingredients'] as $ingredient) { // for each ingredient needed by the recipe
         $found = false;
-        if (!$ingredient['min_buy']) {
-          $ingredient['min_buy'] = 1;
+        if (!$ingredient['minBuy']) {
+          $ingredient['minBuy'] = 1;
         }
         // $ingredient = get_object_vars($ingredient);
         foreach ($userStock as $userIngredient) { // for each ingredients that the user owns in his stock and shopping list
@@ -270,13 +270,13 @@ class Ingredient extends CoreModel  implements JsonSerializable
             if ($ingredient['quantity'] > $userIngredient['quantity']) { // if the recipe require more than what the user owns
               // if ($ingredient['quantity'] - $userIngredient['quantity'])
 
-              $ingredient['quantity'] = $ingredient['min_buy'] * ceil(($ingredient['quantity'] - $userIngredient['quantity']) / $ingredient['min_buy']);
+              $ingredient['quantity'] = $ingredient['minBuy'] * ceil(($ingredient['quantity'] - $userIngredient['quantity']) / $ingredient['minBuy']);
               $ingredientsToBuy[] = $ingredient;
             }
           }
         }
         if (!$found) {
-          $ingredient['quantity'] = $ingredient['min_buy'] * ceil((abs($ingredient['quantity'])) / $ingredient['min_buy']);
+          $ingredient['quantity'] = $ingredient['minBuy'] * ceil((abs($ingredient['quantity'])) / $ingredient['minBuy']);
           $ingredientsToBuy[] = $ingredient;
         }
       }
@@ -439,12 +439,10 @@ class Ingredient extends CoreModel  implements JsonSerializable
     $pdo = Database::getPDO();
     $ingredients = $recipe->getIngredients();
     foreach ($ingredients as $ingredient) {
-      echo 'lol';
       echo $ingredient['quantity'];
       $quantity = $ingredient['quantity'];
       if ($quantity === 'mer') {
         $quantity = '-1';
-        echo 'shleeeee';
       }
       $sql = "INSERT INTO recipe_ingredients (
         ingredient_id,
@@ -462,7 +460,7 @@ class Ingredient extends CoreModel  implements JsonSerializable
       $statement->bindValue(':quantity', $quantity);
       $statement->execute();
       $insertedRow = $statement->rowCount();
-      if ($insertedRow = 0) {
+      if ($insertedRow == 0) {
         return false;
       }
     }
@@ -548,13 +546,13 @@ class Ingredient extends CoreModel  implements JsonSerializable
       $pdo = Database::getPDO();
       $sql = "DELETE FROM users_ingredients
               WHERE ingredient_id= :id
-              AND user_id= :userId
+              AND user_id= :user_id
               AND needed = :needed
     ";
       $statement = $pdo->prepare($sql);
       $statement->bindValue(':id', $id, PDO::PARAM_INT);
       $statement->bindValue(':needed', $needed, PDO::PARAM_INT);
-      $statement->bindValue(':userId', $userId, PDO::PARAM_INT);
+      $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
       $statement->execute();
     } catch (PDOException $e) {
       return $e->errorInfo;
@@ -590,7 +588,7 @@ class Ingredient extends CoreModel  implements JsonSerializable
   public static function findRecipeIngredients($recipeId)
   {
     $pdo = Database::getPDO();
-    $sql = "SELECT i.id, i.name, i.image, ri.quantity, u.unity, i.min_buy
+    $sql = "SELECT i.id, i.name, i.image, ri.quantity, u.unity, i.min_buy as minBuy
           FROM ingredients i 
           LEFT JOIN recipe_ingredients ri 
           ON i.id=ri.ingredient_id 
@@ -671,19 +669,19 @@ class Ingredient extends CoreModel  implements JsonSerializable
    */
   public function getMinBuy()
   {
-    return $this->min_buy;
+    return $this->minBuy;
   }
 
   /**
-   * Set the value of min_buy
+   * Set the value of minBuy
    *
-   * @param  int  $min_buy
+   * @param  int  $minBuy
    *
    * @return  self
    */
-  public function setMinBuy(int $min_buy)
+  public function setMinBuy(int $minBuy)
   {
-    $this->min_buy = $min_buy;
+    $this->minBuy = $minBuy;
 
     return $this;
   }
@@ -695,7 +693,7 @@ class Ingredient extends CoreModel  implements JsonSerializable
    */
   public function getCategoryId()
   {
-    return $this->category_id;
+    return $this->categoryId;
   }
 
   /**
@@ -705,33 +703,33 @@ class Ingredient extends CoreModel  implements JsonSerializable
    *
    * @return  self
    */
-  public function setCategoryId(int $category_id)
+  public function setCategoryId(int $categoryId)
   {
-    $this->category_id = $category_id;
+    $this->categoryId = $categoryId;
 
     return $this;
   }
 
   /**
-   * Get the value of unity_id
+   * Get the value of unityId
    *
    * @return  int
    */
   public function getUnityId()
   {
-    return $this->unity_id;
+    return $this->unityId;
   }
 
   /**
-   * Set the value of unity_id
+   * Set the value of unityId
    *
-   * @param  int  $unity_id
+   * @param  int  $unityId
    *
    * @return  self
    */
-  public function setUnityId(int $unity_id)
+  public function setUnityId(int $unityId)
   {
-    $this->unity_id = $unity_id;
+    $this->unityId = $unityId;
 
     return $this;
   }
@@ -749,7 +747,7 @@ class Ingredient extends CoreModel  implements JsonSerializable
    */
   public function getIsTracked()
   {
-    return $this->is_tracked;
+    return $this->isTracked;
   }
 
   /**
@@ -761,7 +759,7 @@ class Ingredient extends CoreModel  implements JsonSerializable
    */
   public function setIsTracked(bool $isTracked)
   {
-    $this->is_tracked = $isTracked;
+    $this->isTracked = $isTracked;
 
     return $this;
   }

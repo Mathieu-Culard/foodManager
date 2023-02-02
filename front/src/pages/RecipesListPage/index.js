@@ -9,10 +9,10 @@ const RecipesListPage = ({
 }) => {
   useEffect(() => {
     loadRecipe();
-    fetchPublicRecipes();
-    if (isLogged) {
-      fetchMyRecipes();
-    }
+    // fetchPublicRecipes();
+    // if (isLogged) {
+    //   fetchMyRecipes();
+    // }
   }, []);
 
   let recipesList = recipes;

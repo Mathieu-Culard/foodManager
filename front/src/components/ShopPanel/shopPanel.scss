@@ -107,6 +107,7 @@
 .close {
   right: -24rem;
   animation: 1s fold;
+  width: fit-content;
   // overflow: hidden;
 
   // .shop-panel__content>* {
@@ -116,6 +117,7 @@
 }
 
 .open {
+  width: fit-content;
   right: 0;
   animation: 1s unfold;
 }

@@ -54,7 +54,7 @@ class Recipe extends CoreModel  implements JsonSerializable
   public static function findAll()
   {
     $pdo = Database::getPDO();
-    $sql = "SELECT * FROM recipes WHERE public=1";
+    $sql = "SELECT `id`, `name`, `image`, `public`, `reported`, `user_id` as userId FROM recipes WHERE public=1";
     $statement = $pdo->query($sql);
     $recipes = $statement->fetchAll(PDO::FETCH_CLASS, static::class);
     return $recipes;
@@ -65,7 +65,7 @@ class Recipe extends CoreModel  implements JsonSerializable
   public static function find($id)
   {
     $pdo = Database::getPDO();
-    $sql = "SELECT * FROM recipes WHERE id= :id";
+    $sql = "SELECT  `id`, `name`, `image`, `public`, `reported`, `user_id` as userId FROM recipes WHERE id= :id";
     $preparedQuery = $pdo->prepare($sql);
     $preparedQuery->bindValue(':id', $id);
     $preparedQuery->execute();
@@ -307,9 +307,12 @@ class Recipe extends CoreModel  implements JsonSerializable
     $statement = $pdo->prepare($sql);
     $statement->bindValue(':id', $this->id, PDO::PARAM_INT);
     $statement->execute();
+    if ($statement->rowCount() > 0) {
+      unlink(__DIR__ . "/../../public/assets/recipes/" . $this->image);
+    }
+    return ($statement->rowCount() > 0);
     // self::deleteAllWantedRecipe($this->id);
     // On retourne VRAI, si au moins une ligne supprimée
-    return ($statement->rowCount() > 0);
   }
   /**
    * update recipe infos
@@ -527,9 +530,9 @@ class Recipe extends CoreModel  implements JsonSerializable
    *
    * @return  self
    */
-  public function setSteps(array $steps)
+  public function setSteps(string $step)
   {
-    $this->steps = $steps;
+    $this->steps[] = $step;
 
     return $this;
   }

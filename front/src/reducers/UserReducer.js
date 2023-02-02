@@ -1,7 +1,7 @@
 import { SAVE_USER_INFO, CLEAR_USER_INFO } from 'src/actions/user';
-import { SAVE_MY_RECIPES } from 'src/actions/recipes';
+import { SAVE_MY_RECIPES, DELETE_RECIPE, ADD_RECIPE } from 'src/actions/recipes';
 import {
-  CHANGE_STOCK_QUANTITY, DELETE_INGREDIENT, SAVE_USER_STOCK, VALIDATE_SHOPPING_LIST,
+  CHANGE_STOCK_QUANTITY, DELETE_INGREDIENT, SAVE_USER_STOCK, VALIDATE_SHOPPING_LIST
 } from 'src/actions/ingredients';
 import { updateStock, deleteIngredient } from 'src/utils';
 
@@ -27,6 +27,16 @@ const UserReducer = (state = initialState, action = {}) => {
     //     shop: [],
     //     recipesShop: [],
     //   };
+    case ADD_RECIPE:
+      return {
+        ...state,
+        recipes: [...state.recipes, action.recipe],
+      };
+    case DELETE_RECIPE:
+      return {
+        ...state,
+        recipes: state.recipes.filter((item) => item.id !== action.id),
+      };
     case SAVE_MY_RECIPES:
       return {
         ...state,
@@ -64,16 +74,16 @@ const UserReducer = (state = initialState, action = {}) => {
         shop: [],
         recipes: [],
       };
-    // case CHANGE_STOCK_QUANTITY: {
-    //   let list = state.stock;
-    //   if (action.identifier === 'shop') {
-    //     list = state.shop;
-    //   }
-    //   return {
-    //     ...state,
-    //     [action.identifier]: updateStock(list, action.id, action.newValue),
-    //   };
-    // }
+    case CHANGE_STOCK_QUANTITY: {
+      let list = state.stock;
+      if (action.identifier === 'shop') {
+        list = state.shop;
+      }
+      return {
+        ...state,
+        [action.identifier]: updateStock(list, action.id, action.newValue),
+      };
+    }
     // case DELETE_INGREDIENT: {
     //   let list = state.stock;
     //   if (action.identifier === 'shop') {

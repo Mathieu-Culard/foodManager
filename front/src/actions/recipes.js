@@ -22,6 +22,12 @@ export const DELETE_RECIPE_TO_BUY = 'DELETE_RECIPE_TO_BUY';
 export const COOK_RECIPE = 'COOK_RECIPE';
 export const LOAD_RECIPE = 'LOAD_RECIPE';
 export const END_RECIPE_LOAD = 'END_RECIPE_LOAD';
+export const ADD_RECIPE = 'ADD_RECIPE';
+
+export const addRecipe = (recipe) => ({
+  type: ADD_RECIPE,
+  recipe,
+});
 
 export const loadRecipe = () => ({
   type: LOAD_RECIPE,

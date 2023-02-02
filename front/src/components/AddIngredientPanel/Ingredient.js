@@ -1,7 +1,7 @@
 import React from 'react';
 
 const Ingredient = ({
-  id, name, unity, is_tracked, changeValue, addedValues, image, type, minBuy, changeTrack, quantity,
+  id, name, unity, isTracked, changeValue, addedValues, image, type, minBuy, changeTrack, quantity,
 }) => {
   const currentItem = addedValues.find((item) => item.id === id);
   // let quantity = 0;
@@ -37,7 +37,7 @@ const Ingredient = ({
         {type === 'shop' && <input className="ingredient__content__input" type="number" step={minBuy} value={currentItem ? currentItem.quantity : '0'} onChange={(e) => changeValue(id, e.target.value)} />}
         {(type === 'shop' || type === 'stock' || (type === 'recipe' && quantity !== '-1')) && <p className="ingredient__content__unity">{unity}</p>}
       </div>
-      {(type === 'recipe' && is_tracked === '0') && (
+      {(type === 'recipe' && isTracked === '0') && (
         <label htmlFor="untrack" className="ingredient__checkbox">Quantité libre
           <input name="untrack" className="ingredient__checkbox__untrack" type="checkbox" onChange={(e) => handleChange(e, id)} checked={checked} />
         </label>

@@ -1,4 +1,5 @@
 export const CHANGE_STOCK_QUANTITY = 'CHANGE_QUANTITY';
+export const VALIDATE_QUANTITY = 'VALIDATE_QUANTITY';
 export const FETCH_USER_STOCK = 'FETCH_USER_STOCK';
 export const SAVE_USER_STOCK = 'SAVE_USER_STOCK';
 export const FETCH_INGREDIENTS = 'FETCH_INGREDIENT';
@@ -13,6 +14,13 @@ export const CHANGE_RECIPE_INGREDIENT_QUANTITY = 'CHANGE_RECIPE_INGREDIENT_QUANT
 export const VALIDATE_SHOPPING_LIST = 'VALIDATE_SHOPPING_LIST';
 export const CHANGE_TRACK = 'CHANGE_TRACK';
 export const SEND_SHOPPING_LIST = 'SEND_SHOPPING_LIST';
+
+export const validateQuantity = (id, value, identifier) => ({
+  type: VALIDATE_QUANTITY,
+  id,
+  value,
+  identifier,
+});
 
 export const sendShoppingList = () => ({
   type: SEND_SHOPPING_LIST,

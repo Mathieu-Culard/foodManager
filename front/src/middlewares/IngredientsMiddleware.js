@@ -13,13 +13,22 @@ import {
   saveUserStock,
   VALIDATE_SHOPPING_LIST,
   SEND_SHOPPING_LIST,
+  VALIDATE_QUANTITY,
 } from 'src/actions/ingredients';
 import { fetchPublicRecipes, fetchMyRecipes } from 'src/actions/recipes';
 
 const IngredientsMiddleware = (store) => (next) => (action) => {
   switch (action.type) {
     case SEND_SHOPPING_LIST: {
-      axios.get('http://localhost:8000/api/send/shopping',
+      const {
+        shop,
+        recipesShop,
+      } = store.getState().user;
+      axios.post('http://localhost:8000/api/send/shopping',
+        {
+          shop,
+          recipesShop,
+        },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt')}`,
@@ -103,10 +112,10 @@ const IngredientsMiddleware = (store) => (next) => (action) => {
       next(action);
       break;
     }
-    case CHANGE_STOCK_QUANTITY: {
+    case VALIDATE_QUANTITY: {
       axios.post(`http://localhost:8000/api/stock/edit/${action.id}`,
         {
-          newValue: action.newValue,
+          newValue: action.value,
           identifier: action.identifier,
         },
         {
@@ -115,7 +124,7 @@ const IngredientsMiddleware = (store) => (next) => (action) => {
           },
         })
         .then(() => {
-          store.dispatch(fetchUserStock(action.identifier));
+          // store.dispatch(fetchUserStock(action.identifier));
           store.dispatch(fetchPublicRecipes());
           store.dispatch(fetchMyRecipes());
           if (action.identifier === 'stock') {

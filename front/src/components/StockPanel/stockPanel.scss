@@ -9,12 +9,12 @@
   width: 20%;
   z-index: 995;
   font-family: $raleway;
-  color:$darkColor;
+  color: $darkColor;
 
   &__opener {
-    z-index:997;
+    z-index: 997;
     background-color: white;
-    border-radius: 0 10px 10px 0 ;
+    border-radius: 0 10px 10px 0;
     position: absolute;
     padding-left: 0.1rem;
     height: 7rem;
@@ -26,18 +26,21 @@
     text-align: center;
     border: 1px solid $darkColor;
     border-left: none;
-    &__title{
+
+    &__title {
       font-size: 1.2rem;
       width: 70px;
       margin: 0 auto;
     }
-    &__button{
+
+    &__button {
       position: absolute;
       padding-left: 0.1rem;
       height: 7rem;
       width: 7rem;
       right: 0;
-      &:hover{
+
+      &:hover {
         cursor: pointer;
       }
     }
@@ -66,12 +69,14 @@
 
   &__content {
     border: 1px solid $darkColor;
-    background-color: rgba($color: #ffffff, $alpha: 0.8);;
+    background-color: rgba($color: #ffffff, $alpha: 0.8);
+    ;
     width: 24rem;
     // height: 100vh;
     overflow-y: auto;
     text-align: center;
-    &__ingredients{
+
+    &__ingredients {
       text-align: left;
       padding-bottom: 2rem;
     }
@@ -86,11 +91,12 @@
     }
 
 
-    &__add{
-      font-size:1.2rem;
-      color:$mainColor;
+    &__add {
+      font-size: 1.2rem;
+      color: $mainColor;
       text-decoration: underline;
-      &:hover{
+
+      &:hover {
         text-decoration: none;
       }
     }
@@ -99,18 +105,21 @@
 
 
 .stock-close {
-  left:-24rem;
+  width: fit-content;
+  left: -24rem;
   animation: 1s fold-stock;
 }
 
 .stock-open {
-  left:0px;
+  width: fit-content;
+  left: 0px;
   animation: 1s unfold-stock;
 }
 
 @keyframes unfold-stock {
   from {
     left: -24rem;
+
 
   }
 
@@ -126,26 +135,29 @@
 
   to {
     left: -24rem;
+
   }
 }
 
-@keyframes openStock{
-  from{
-    
+@keyframes openStock {
+  from {
+
     border-right: 20px solid $mainColor;
   }
-  to{
+
+  to {
     border-left: 20px solid $mainColor;
   }
 }
 
 
-@keyframes closeStock{
-  from{
+@keyframes closeStock {
+  from {
     border-left: 20px solid $mainColor;
 
   }
-  to{
+
+  to {
     border-right: 20px solid $mainColor;
 
   }

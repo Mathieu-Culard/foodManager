@@ -380,7 +380,7 @@ $router->map(
 
 //=============INGREDIENTS============//
 $router->map(
-    'GET',
+    'POST',
     '/api/send/shopping',
     [
         'method' => 'sendShoppingList',
